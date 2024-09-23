@@ -1,4 +1,4 @@
-name: build-api
+name: build-relayer
 
 on:
   workflow_call:
@@ -29,9 +29,9 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ github.job }}-${{ runner.os }}-buildx-api
+          key: ${{ github.job }}-${{ runner.os }}-buildx-relayer
           restore-keys: |
-            ${{ github.job }}-${{ runner.os }}-buildx-api
+            ${{ github.job }}-${{ runner.os }}-buildx-relayer
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -42,13 +42,13 @@ jobs:
       # Configure tag name
       - name: Sets env vars
         run: |
-          echo "DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}-api:${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_NAME=${{ secrets.DOCKER_USERNAME }}/${{ github.event.repository.name }}-relayer:${GITHUB_SHA:0:8}" >> $GITHUB_ENV
 
       # Build docker image
       - name: Build docker image
         uses: docker/build-push-action@v4
         with:
-            file: docker/api.Dockerfile
+            file: docker/relayer.Dockerfile
             target: ${{ inputs.target }}
             push: ${{ inputs.push }}
             tags: ${{ env.DOCKER_IMAGE_NAME }}

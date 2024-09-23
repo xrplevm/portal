@@ -6,10 +6,6 @@
     "scripts": {
         "dev": "tsup --watch",
         "build": "tsup",
-        "test": "jest --maxWorkers=30% --passWithNoTests",
-        "test:coverage": "test --coverage --passWithNoTests",
-        "test:watch": "test --watch --passWithNoTests",
-        "test:debug": "jest --no-cache --runInBand --passWithNoTests",
         "clean": "rimraf .turbo dist node_modules",
         "lint": "eslint .",
         "check-types": "npx tsc --noEmit"

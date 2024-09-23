@@ -1,5 +1,5 @@
 packages:
-    - "apps/api"
+    - "apps/relayer"
     - "apps/mobile"
     - "apps/web"
     - "packages/backend/*"

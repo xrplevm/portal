@@ -18,6 +18,7 @@
     "exports": {
         "./base": "./.eslintrc.base.js",
         "./node": "./.eslintrc.node.js",
+        "./nest": "./.eslintrc.nest.js",
         "./package": "./.eslintrc.package.js",
         "./react": "./.eslintrc.react.js",
         "./utils/jsdoc": "./utils/jsdoc.js"

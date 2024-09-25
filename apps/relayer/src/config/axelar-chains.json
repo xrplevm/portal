@@ -155,6 +155,7 @@
             "id": "avalanche-fuji",
             "axelarId": "avalanche-fuji",
             "chainId": 43113,
+            "ws": "wss://api.avax-test.network/ext/bc/C/ws",
             "rpc": "https://avalanche-fuji-c-chain-rpc.publicnode.com",
             "tokenSymbol": "AVAX",
             "confirmations": 1,
@@ -443,6 +444,7 @@
             "rpc": "https://rpc.xrplevm.org",
             "tokenSymbol": "XRP",
             "confirmations": 1,
+            "ws": "ws://168.119.63.112:8546",
             "gasOptions": {
                 "gasLimit": 15000000
             },

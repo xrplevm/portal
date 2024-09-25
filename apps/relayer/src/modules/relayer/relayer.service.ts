@@ -1,9 +1,10 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { RelayerRequest } from "./relayer.request";
+import { RelayerEvmRequest } from "./requests/relayer-evm.request";
 import { ConfigService } from "@nestjs/config";
 import { execSync } from "child_process";
 import axelarChains from "../../config/axelar-chains.json";
 import { ethers, providers, Wallet } from "ethers";
+import { RelayerXrplRequest } from "./requests/relayer-xrpl.request";
 
 @Injectable()
 export class RelayerService {
@@ -30,10 +31,11 @@ export class RelayerService {
     }
 
     /**
-     * Relay the request.
+     * Resolve the message ID for an EVM message.
      * @param relayerRequest The relayer request.
+     * @returns The message ID.
      */
-    async relay(relayerRequest: RelayerRequest): Promise<void> {
+    async resolveEvmMessage(relayerRequest: RelayerEvmRequest): Promise<string> {
         // @ts-ignore
         const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
         const messageId = `${relayerRequest.txHash}-${relayerRequest.txEvent}`;
@@ -100,6 +102,7 @@ export class RelayerService {
             `axelard tx wasm execute ${destinationChainMultisigProver} '${JSON.stringify(constructProofCall)}' ${this.axelarCmdTransactionFlags()}`,
         );
         const responseJson = JSON.parse(response.toString());
+
         const log = responseJson.logs[0].events.find((log: any) => log.type === "wasm-proof_under_construction");
         const attribute = log.attributes.find((attr: any) => attr.key === "multisig_session_id");
         const multisigSessionId = attribute.value.replace(/"/g, "");
@@ -118,14 +121,91 @@ export class RelayerService {
             `axelard q wasm contract-state smart ${destinationChainMultisigProver} '${JSON.stringify(getProofCall)}' --output json --node ${this.axelarRpc}`,
         );
         const proof = JSON.parse(rawProof.toString());
-        const executeData = proof.data.status.completed.execute_data;
+
+        return proof.data.status.completed.execute_data;
+    }
+
+    /**
+     * Resolve the message ID for an XRPL message.
+     * @param relayerRequest The relayer request.
+     * @returns The message ID.
+     */
+    async resolveXrplMessage(relayerRequest: RelayerXrplRequest): Promise<void> {
         // @ts-ignore
-        const destinationRpc = axelarChains.chains[relayerRequest.destinationChain].rpc;
-        const provider = new providers.JsonRpcProvider(destinationRpc);
+        const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
+        const messageId = `${relayerRequest.userRequest.txId}`;
+        const txIdBytes = ethers.utils.toUtf8Bytes(relayerRequest.userRequest.txId);
+
+        // 00. Verify the message
+        Logger.log(`Verifying message ${messageId} on ${relayerRequest.sourceChain}`);
+        const contractCall = {
+            verify_messages: [
+                {
+                    user_messsage: {
+                        tx_id: txIdBytes,
+                        amount: {
+                            drops: relayerRequest.userRequest.amount,
+                        },
+                        source_address: relayerRequest.userRequest.sourceAddress,
+                        destination_address: relayerRequest.userRequest.destinationAddress,
+                        destination_chain: relayerRequest.userRequest.destinationChain,
+                        payload_hash: relayerRequest.userRequest.payloadHash,
+                    },
+                },
+            ],
+        };
+
+        execSync(`axelard tx wasm execute ${sourceChainGateway} '${JSON.stringify(contractCall)}' ${this.axelarCmdTransactionFlags()}`, {
+            stdio: "inherit",
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, this.verifyWaitTime));
+    }
+
+    /**
+     * Relay the request.
+     * @param relayerRequest The relayer request.
+     */
+    async relayEvmToEvm(relayerRequest: RelayerEvmRequest): Promise<void> {
+        // @ts-ignore
+        const executeData = await this.resolveEvmMessage(relayerRequest);
+        const messageId = `${relayerRequest.txHash}-${relayerRequest.txEvent}`;
+        await this.sendProofToEvm(executeData, messageId, relayerRequest.destinationChain);
+    }
+
+    /**
+     * Relay the request.
+     * @param relayerRequest The relayer request.
+     */
+    async relayXrplToEvm(relayerRequest: RelayerXrplRequest): Promise<void> {
+        await this.resolveXrplMessage(relayerRequest);
+
+        // TODO: Implement xrpl execution
+    }
+
+    /**
+     * Relay the request.
+     * @param _relayerRequest The relayer request.
+     */
+    async relayEvmToXrpl(_relayerRequest: RelayerEvmRequest): Promise<void> {
+        // TODO: Implement
+
+        await this.resolveEvmMessage(_relayerRequest);
+    }
+
+    /**
+     * Send the proof to the Axelar Gateway on the destination chain.
+     * @param executeData The execute data from the Axelar Multisig Prover.
+     * @param messageId The message ID.
+     * @param destinationChain The destination chain.
+     */
+    async sendProofToEvm(executeData: any, messageId: string, destinationChain: string) {
+        // @ts-ignore
+        const provider = new providers.JsonRpcProvider(axelarChains.chains[destinationChain].rpc);
         const wallet = new Wallet(this.privateKey, provider);
         // @ts-ignore
-        const gatewayAddress = axelarChains.chains[relayerRequest.destinationChain].contracts.AxelarGateway.address;
-        Logger.log(`Sending proof for message ${messageId} on ${relayerRequest.destinationChain} with execute data ${executeData}`);
+        const gatewayAddress = axelarChains.chains[destinationChain].contracts.AxelarGateway.address;
+        Logger.log(`Sending proof for message ${messageId} on ${destinationChain} with execute data ${executeData}`);
         await wallet
             .sendTransaction({ to: gatewayAddress, data: "0x" + executeData, gasLimit: ethers.BigNumber.from(120_000) })
             .then((tx) => tx.wait());

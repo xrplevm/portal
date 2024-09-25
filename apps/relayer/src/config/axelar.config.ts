@@ -18,6 +18,6 @@ export default (): AxelarConfig => {
         chainId: "devnet-amplifier",
         verifyWaitTime: 9_000,
         proveWaitTime: 9_000,
-        privateKey: "022bfeaa81eed7d52f500990cac50e8d3561a89795e9a1121d25d1299edd0e9c",
+        privateKey: "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
     });
 };

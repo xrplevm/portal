@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class RelayerRequest {
+export class RelayerEvmRequest {
     @ApiProperty({
         type: "string",
         required: true,

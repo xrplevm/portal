@@ -3,8 +3,12 @@ import { RelayerEvmRequest } from "./requests/relayer-evm.request";
 import { ConfigService } from "@nestjs/config";
 import { execSync } from "child_process";
 import axelarChains from "../../config/axelar-chains.json";
-import { ethers, providers, Wallet } from "ethers";
-import { RelayerXrplRequest } from "./requests/relayer-xrpl.request";
+import { Contract, providers, Wallet } from "ethers";
+import { id } from "ethers/lib/utils";
+import IAxelarExecutable from "@axelar-network/axelar-gmp-sdk-solidity/interfaces/IAxelarExecutable.json";
+import { sleep } from "../common/utils/sleep";
+import { ItsRelayerService } from "./its-relayer.service";
+import { TransactionRequest } from "@ethersproject/abstract-provider";
 
 @Injectable()
 export class GmpRelayerService {
@@ -12,74 +16,21 @@ export class GmpRelayerService {
     private readonly axelarRpc: string;
     private readonly verifyWaitTime: number;
     private readonly proveWaitTime: number;
+    private readonly externalRelayWaitTime: number;
     private readonly privateKey: string;
+    private readonly externalRelayedChains: string[];
 
-    constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
+    constructor(
+        @Inject(ConfigService) private readonly configService: ConfigService,
+        private readonly itsRelayerService: ItsRelayerService,
+    ) {
         this.axelarChainId = this.configService.get<string>("axelar.chainId")!;
         this.axelarRpc = this.configService.get<string>("axelar.rpcUrl")!;
         this.verifyWaitTime = this.configService.get<number>("axelar.verifyWaitTime")!;
         this.proveWaitTime = this.configService.get<number>("axelar.proveWaitTime")!;
+        this.externalRelayWaitTime = this.configService.get<number>("axelar.externalRelayWaitTime")!;
         this.privateKey = this.configService.get<string>("axelar.privateKey")!;
-    }
-
-    /**
-     * Verify the messages.
-     * @param hash The hash.
-     * @param i The index.
-     * @param sourceChain The source chain.
-     * @param sourceAddress The source address.
-     * @param destinationChain The destination chain.
-     * @param destinationContractAddress The destination contract address.
-     * @param payloadHash The payload hash.
-     * @param payload The payload.
-     */
-    // TODO: Implement
-    async verifyMessages(
-        hash: string,
-        i: number,
-        sourceChain: string,
-        sourceAddress: string,
-        destinationChain: string,
-        destinationContractAddress: string,
-        payloadHash: string,
-        payload: string,
-    ) {
-        console.log(
-            "verifyMessages",
-            hash,
-            i,
-            sourceChain,
-            sourceAddress,
-            destinationChain,
-            destinationContractAddress,
-            payloadHash,
-            payload,
-        );
-    }
-
-    /**
-     * Execute the message.
-     * @param txHash The transaction hash.
-     * @param logIndex The log index.
-     * @param commandId The command ID.
-     * @param sourceChain The source chain.
-     * @param messageId The message ID.
-     * @param sourceAddress The source address.
-     * @param contractAddress The contract address.
-     * @param payloadHash The payload hash.
-     */
-    // TODO: Implement
-    async executeMessage(
-        txHash: string,
-        logIndex: number,
-        commandId: string,
-        sourceChain: string,
-        messageId: string,
-        sourceAddress: string,
-        contractAddress: string,
-        payloadHash: string,
-    ) {
-        console.log("executeMessage", txHash, logIndex, commandId, sourceChain, messageId, sourceAddress, contractAddress, payloadHash);
+        this.externalRelayedChains = this.configService.get<string[]>("axelar.externalRelayedChains")!;
     }
 
     /**
@@ -91,23 +42,21 @@ export class GmpRelayerService {
     }
 
     /**
-     * Resolve the message ID for an EVM message.
+     * Verify the messages.
      * @param relayerRequest The relayer request.
-     * @returns The message ID.
      */
-    async resolveEvmMessage(relayerRequest: RelayerEvmRequest): Promise<string> {
-        // @ts-ignore
+    async verifyMessages(relayerRequest: RelayerEvmRequest): Promise<void> {
+        //@ts-ignore
         const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
-        const messageId = `${relayerRequest.txHash}-${relayerRequest.txEvent}`;
 
         // 00. Verify the message
-        Logger.log(`Verifying message ${messageId} on ${relayerRequest.sourceChain}`);
+        Logger.log(`Verifying message ${relayerRequest.messageId} on ${relayerRequest.sourceChain}`);
         const contractCall = {
             verify_messages: [
                 {
                     cc_id: {
                         source_chain: relayerRequest.sourceChain,
-                        message_id: messageId,
+                        message_id: relayerRequest.messageId,
                     },
                     destination_chain: relayerRequest.destinationChain,
                     destination_address: relayerRequest.destinationAddress,
@@ -123,14 +72,14 @@ export class GmpRelayerService {
 
         await new Promise((resolve) => setTimeout(resolve, this.verifyWaitTime));
 
-        Logger.log(`Routing message ${messageId} on ${relayerRequest.destinationChain}`);
+        Logger.log(`Routing message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         // 01. Route the message
         const routeMessageCall = {
             route_messages: [
                 {
                     cc_id: {
                         source_chain: relayerRequest.sourceChain,
-                        message_id: messageId,
+                        message_id: relayerRequest.messageId,
                     },
                     destination_chain: relayerRequest.destinationChain,
                     destination_address: relayerRequest.destinationAddress,
@@ -145,8 +94,15 @@ export class GmpRelayerService {
                 stdio: "inherit",
             },
         );
+    }
 
-        Logger.log(`Constructing proof for message ${messageId} on ${relayerRequest.destinationChain}`);
+    /**
+     * Construct the transfer proof.
+     * @param relayerRequest The relayer request.
+     * @returns The multisig session ID.
+     */
+    async constructTransferProof(relayerRequest: RelayerEvmRequest): Promise<string> {
+        Logger.log(`Constructing proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         // 02. Construct proof
         // @ts-ignore
         const destinationChainMultisigProver = axelarChains.axelar.contracts.MultisigProver[relayerRequest.destinationChain].address;
@@ -154,7 +110,7 @@ export class GmpRelayerService {
             construct_proof: [
                 {
                     source_chain: relayerRequest.sourceChain,
-                    message_id: messageId,
+                    message_id: relayerRequest.messageId,
                 },
             ],
         };
@@ -162,15 +118,23 @@ export class GmpRelayerService {
             `axelard tx wasm execute ${destinationChainMultisigProver} '${JSON.stringify(constructProofCall)}' ${this.axelarCmdTransactionFlags()}`,
         );
         const responseJson = JSON.parse(response.toString());
-
         const log = responseJson.logs[0].events.find((log: any) => log.type === "wasm-proof_under_construction");
         const attribute = log.attributes.find((attr: any) => attr.key === "multisig_session_id");
-        const multisigSessionId = attribute.value.replace(/"/g, "");
+        return attribute.value.replace(/"/g, "");
+    }
 
-        await new Promise((resolve) => setTimeout(resolve, this.proveWaitTime));
+    /**
+     * Prepare the relay transfer transaction.
+     * @param relayerRequest The relayer request.
+     * @param multisigSessionId The multisig session ID.
+     * @returns The transaction.
+     */
+    async prepareRelayTransferTransaction(relayerRequest: RelayerEvmRequest, multisigSessionId: string): Promise<TransactionRequest> {
+        //@ts-ignore
+        const destinationChainMultisigProver = axelarChains.axelar.contracts.MultisigProver[relayerRequest.destinationChain].address;
 
         Logger.log(
-            `Getting proof for message ${messageId} on ${relayerRequest.destinationChain} with multisig session id ${multisigSessionId}`,
+            `Getting proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain} with multisig session id ${multisigSessionId}`,
         );
         const getProofCall = {
             proof: {
@@ -181,45 +145,79 @@ export class GmpRelayerService {
             `axelard q wasm contract-state smart ${destinationChainMultisigProver} '${JSON.stringify(getProofCall)}' --output json --node ${this.axelarRpc}`,
         );
         const proof = JSON.parse(rawProof.toString());
-
-        return proof.data.status.completed.execute_data;
+        //@ts-ignore
+        const gatewayAddress = axelarChains.chains[relayerRequest.destinationChain].contracts.AxelarGateway.address;
+        console.log({
+            to: gatewayAddress,
+            data: `0x${proof.data.status.completed.execute_data}`,
+        });
+        return {
+            to: gatewayAddress,
+            data: `0x${proof.data.status.completed.execute_data}`,
+            value: 0,
+        };
     }
 
     /**
-     * Resolve the message ID for an XRPL message.
+     * Prepare the execute ITS transfer.
      * @param relayerRequest The relayer request.
-     * @returns The message ID.
      */
-    async resolveXrplMessage(relayerRequest: RelayerXrplRequest): Promise<void> {
+    async prepareExecuteItsTransfer(relayerRequest: RelayerEvmRequest): Promise<void> {
+        const commandId = id(`${relayerRequest.destinationChain}_${relayerRequest.messageId}`);
         // @ts-ignore
-        const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
-        const messageId = `${relayerRequest.userRequest.txId}`;
-        const txIdBytes = ethers.utils.toUtf8Bytes(relayerRequest.userRequest.txId);
+        const destinationIts = axelarChains.chains[relayerRequest.destinationChain].contracts.InterchainTokenService.address;
+        // @ts-ignore
+        const provider = new providers.JsonRpcProvider(axelarChains.chains[relayerRequest.destinationChain].rpc);
+        const wallet = new Wallet(this.privateKey, provider);
+        const appContract = new Contract(destinationIts, IAxelarExecutable.abi, wallet);
+        const tx = await appContract.execute(commandId, relayerRequest.sourceChain, relayerRequest.sourceAddress, relayerRequest.payload);
+        await tx.wait();
+    }
 
-        // 00. Verify the message
-        Logger.log(`Verifying message ${messageId} on ${relayerRequest.sourceChain}`);
-        const contractCall = {
-            verify_messages: [
-                {
-                    user_messsage: {
-                        tx_id: txIdBytes,
-                        amount: {
-                            drops: relayerRequest.userRequest.amount,
-                        },
-                        source_address: relayerRequest.userRequest.sourceAddress,
-                        destination_address: relayerRequest.userRequest.destinationAddress,
-                        destination_chain: relayerRequest.userRequest.destinationChain,
-                        payload_hash: relayerRequest.userRequest.payloadHash,
-                    },
-                },
-            ],
-        };
+    /**
+     * Sign and submit the transaction.
+     * @param chain The chain.
+     * @param transaction The transaction.
+     */
+    async signAndSubmitTransaction(chain: string, transaction: TransactionRequest): Promise<void> {
+        // @ts-ignore
+        const provider = new providers.JsonRpcProvider(axelarChains.chains[chain].rpc);
+        const wallet = new Wallet(this.privateKey, provider);
+        await wallet.sendTransaction(transaction).then((tx) => tx.wait());
+    }
 
-        execSync(`axelard tx wasm execute ${sourceChainGateway} '${JSON.stringify(contractCall)}' ${this.axelarCmdTransactionFlags()}`, {
-            stdio: "inherit",
-        });
+    /**
+     * Resolve the message ID for an EVM message.
+     * @param relayerRequest The relayer request.
+     * @returns The execute data.
+     */
+    async resolveEvmTransaction(
+        relayerRequest: RelayerEvmRequest,
+    ): Promise<{ relayerRequest: RelayerEvmRequest; multisigSessionId: string }> {
+        if (this.externalRelayedChains.indexOf(relayerRequest.sourceChain) === -1) {
+            await this.verifyMessages(relayerRequest);
+        } else {
+            await sleep(this.externalRelayWaitTime);
+        }
+        await sleep(this.verifyWaitTime);
+        if (relayerRequest.destinationChain === "axelarnet") {
+            relayerRequest = await this.itsRelayerService.executeItsHub(relayerRequest);
+        }
+        const multisigSessionId = await this.constructTransferProof(relayerRequest);
+        await sleep(this.proveWaitTime);
 
-        await new Promise((resolve) => setTimeout(resolve, this.verifyWaitTime));
+        return { relayerRequest, multisigSessionId };
+    }
+
+    /**
+     * Relay the request.
+     * @param relayerRequest The relayer request.
+     * @param multisigSessionId The multisig session ID.
+     */
+    async relayTransactionToEvm(relayerRequest: RelayerEvmRequest, multisigSessionId: string): Promise<void> {
+        const relayTransferTransaction = await this.prepareRelayTransferTransaction(relayerRequest, multisigSessionId);
+        await this.signAndSubmitTransaction(relayerRequest.destinationChain, relayTransferTransaction);
+        await this.prepareExecuteItsTransfer(relayerRequest);
     }
 
     /**
@@ -227,47 +225,7 @@ export class GmpRelayerService {
      * @param relayerRequest The relayer request.
      */
     async relayEvmToEvm(relayerRequest: RelayerEvmRequest): Promise<void> {
-        // @ts-ignore
-        const executeData = await this.resolveEvmMessage(relayerRequest);
-        const messageId = `${relayerRequest.txHash}-${relayerRequest.txEvent}`;
-        await this.sendProofToEvm(executeData, messageId, relayerRequest.destinationChain);
-    }
-
-    /**
-     * Relay the request.
-     * @param relayerRequest The relayer request.
-     */
-    async relayXrplToEvm(relayerRequest: RelayerXrplRequest): Promise<void> {
-        await this.resolveXrplMessage(relayerRequest);
-
-        // TODO: Implement xrpl execution
-    }
-
-    /**
-     * Relay the request.
-     * @param _relayerRequest The relayer request.
-     */
-    async relayEvmToXrpl(_relayerRequest: RelayerEvmRequest): Promise<void> {
-        // TODO: Implement
-
-        await this.resolveEvmMessage(_relayerRequest);
-    }
-
-    /**
-     * Send the proof to the Axelar Gateway on the destination chain.
-     * @param executeData The execute data from the Axelar Multisig Prover.
-     * @param messageId The message ID.
-     * @param destinationChain The destination chain.
-     */
-    async sendProofToEvm(executeData: any, messageId: string, destinationChain: string) {
-        // @ts-ignore
-        const provider = new providers.JsonRpcProvider(axelarChains.chains[destinationChain].rpc);
-        const wallet = new Wallet(this.privateKey, provider);
-        // @ts-ignore
-        const gatewayAddress = axelarChains.chains[destinationChain].contracts.AxelarGateway.address;
-        Logger.log(`Sending proof for message ${messageId} on ${destinationChain} with execute data ${executeData}`);
-        await wallet
-            .sendTransaction({ to: gatewayAddress, data: "0x" + executeData, gasLimit: ethers.BigNumber.from(120_000) })
-            .then((tx) => tx.wait());
+        const { relayerRequest: resolved, multisigSessionId } = await this.resolveEvmTransaction(relayerRequest);
+        await this.relayTransactionToEvm(resolved, multisigSessionId);
     }
 }

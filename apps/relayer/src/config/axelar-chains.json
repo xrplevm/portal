@@ -444,7 +444,6 @@
             "rpc": "https://rpc.xrplevm.org",
             "tokenSymbol": "XRP",
             "confirmations": 1,
-            "ws": "ws://168.119.63.112:8546",
             "gasOptions": {
                 "gasLimit": 15000000
             },

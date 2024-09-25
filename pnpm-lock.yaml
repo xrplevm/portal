@@ -41,6 +41,9 @@ importers:
       '@backend/core':
         specifier: workspace:*
         version: link:../../packages/backend/core
+      '@bloxer/ethers-typechain-contract':
+        specifier: 0.0.5
+        version: 0.0.5
       '@nanogiants/nestjs-swagger-api-exception-decorator':
         specifier: ^1.6.5
         version: 1.6.11(@nestjs/common@10.4.3(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/swagger@7.1.17(@nestjs/common@10.4.3(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/core@10.4.3(@nestjs/common@10.4.3(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13)(rxjs@7.8.1))(@nestjs/platform-express@10.4.3)(reflect-metadata@0.1.13)(rxjs@7.8.1))(class-transformer@0.5.1)(class-validator@0.14.0)(reflect-metadata@0.1.13))
@@ -2524,6 +2527,15 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@bloxer/ethers-typechain-contract@0.0.5':
+    resolution: {integrity: sha512-LxyjKY3ccHWG9ov+qbrJvhG06Vmhl6oDlpBG4SgQHhMWHw46K0HWWnGi4bNc5Yb+oQNTzQT8DR/GnlzzbSpBLg==}
+
+  '@bloxer/ethers@0.0.3':
+    resolution: {integrity: sha512-dyqjUtjhd04NdL6woGBQujmSNa/evLzGKgb9qYpmYWd3nNVJa7WQzcsVJP86IZ8wykmgLsH9IvNgeHb2H/OulA==}
+
+  '@bloxer/vanilla@0.0.2':
+    resolution: {integrity: sha512-+vuSs+X5pIZoIcc8uddaaOSHSyBw5TE2r7wTvLN1fiLFHOUz6B6qid5YWy1H9TnRXx4/lruFZ1okGAruO8QqPw==}
 
   '@chromatic-com/storybook@1.9.0':
     resolution: {integrity: sha512-vYQ+TcfktEE3GHnLZXHCzXF/sN9dw+KivH8a5cmPyd9YtQs7fZtHrEgsIjWpYycXiweKMo1Lm1RZsjxk8DH3rA==}
@@ -9728,6 +9740,10 @@ packages:
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
+  tslog@4.9.3:
+    resolution: {integrity: sha512-oDWuGVONxhVEBtschLf2cs/Jy8i7h1T+CpdkTNWQgdAF7DhRo2G8vMCgILKe7ojdEkLhICWgI1LYSSKaJsRgcw==}
+    engines: {node: '>=16'}
+
   tsort@0.0.1:
     resolution: {integrity: sha512-Tyrf5mxF8Ofs1tNoxA13lFeZ2Zrbd6cKbuH3V+MQ5sb6DtBj5FjrXVsRWT8YvNAQTqNoz66dz1WsbigI22aEnw==}
 
@@ -12258,6 +12274,28 @@ snapshots:
   '@base2/pretty-print-object@1.0.1': {}
 
   '@bcoe/v8-coverage@0.2.3': {}
+
+  '@bloxer/ethers-typechain-contract@0.0.5':
+    dependencies:
+      '@bloxer/ethers': 0.0.3
+      '@bloxer/vanilla': 0.0.2
+      '@ethersproject/providers': 5.7.2
+      ethers: 5.7.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@bloxer/ethers@0.0.3':
+    dependencies:
+      '@bloxer/vanilla': 0.0.2
+      ethers: 5.7.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@bloxer/vanilla@0.0.2':
+    dependencies:
+      tslog: 4.9.3
 
   '@chromatic-com/storybook@1.9.0(react@18.3.1)':
     dependencies:
@@ -21936,6 +21974,8 @@ snapshots:
   tslib@1.14.1: {}
 
   tslib@2.7.0: {}
+
+  tslog@4.9.3: {}
 
   tsort@0.0.1: {}
 

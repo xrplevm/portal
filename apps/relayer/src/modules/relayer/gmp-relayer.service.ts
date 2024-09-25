@@ -23,6 +23,66 @@ export class GmpRelayerService {
     }
 
     /**
+     * Verify the messages.
+     * @param hash The hash.
+     * @param i The index.
+     * @param sourceChain The source chain.
+     * @param sourceAddress The source address.
+     * @param destinationChain The destination chain.
+     * @param destinationContractAddress The destination contract address.
+     * @param payloadHash The payload hash.
+     * @param payload The payload.
+     */
+    // TODO: Implement
+    async verifyMessages(
+        hash: string,
+        i: number,
+        sourceChain: string,
+        sourceAddress: string,
+        destinationChain: string,
+        destinationContractAddress: string,
+        payloadHash: string,
+        payload: string,
+    ) {
+        console.log(
+            "verifyMessages",
+            hash,
+            i,
+            sourceChain,
+            sourceAddress,
+            destinationChain,
+            destinationContractAddress,
+            payloadHash,
+            payload,
+        );
+    }
+
+    /**
+     * Execute the message.
+     * @param txHash The transaction hash.
+     * @param logIndex The log index.
+     * @param commandId The command ID.
+     * @param sourceChain The source chain.
+     * @param messageId The message ID.
+     * @param sourceAddress The source address.
+     * @param contractAddress The contract address.
+     * @param payloadHash The payload hash.
+     */
+    // TODO: Implement
+    async executeMessage(
+        txHash: string,
+        logIndex: number,
+        commandId: string,
+        sourceChain: string,
+        messageId: string,
+        sourceAddress: string,
+        contractAddress: string,
+        payloadHash: string,
+    ) {
+        console.log("executeMessage", txHash, logIndex, commandId, sourceChain, messageId, sourceAddress, contractAddress, payloadHash);
+    }
+
+    /**
      * Axelar command transaction flags.
      * @returns The transaction flags.
      */

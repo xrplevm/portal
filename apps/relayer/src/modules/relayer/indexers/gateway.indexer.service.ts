@@ -27,7 +27,7 @@ export class GatewayIndexerService implements OnApplicationBootstrap {
                         minLevel: 0,
                         name: `${chain}-gateway-indexer`,
                     },
-                    startingBlock: 11400000,
+                    startingBlock: "latest",
                 },
             );
 

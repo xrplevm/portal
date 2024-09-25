@@ -17,13 +17,13 @@ export class RelayerEvmRequest {
         type: "string",
         required: true,
     })
-    txHash: string;
+    messageId: string;
 
     @ApiProperty({
         type: "string",
         required: true,
     })
-    txEvent: string;
+    payload: string;
 
     @ApiProperty({
         type: "string",

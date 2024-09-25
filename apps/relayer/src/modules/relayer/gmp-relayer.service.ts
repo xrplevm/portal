@@ -7,7 +7,7 @@ import { ethers, providers, Wallet } from "ethers";
 import { RelayerXrplRequest } from "./requests/relayer-xrpl.request";
 
 @Injectable()
-export class RelayerService {
+export class GmpRelayerService {
     private readonly axelarChainId: string;
     private readonly axelarRpc: string;
     private readonly verifyWaitTime: number;

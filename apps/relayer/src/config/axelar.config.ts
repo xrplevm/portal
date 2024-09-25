@@ -6,6 +6,7 @@ interface AxelarConfig {
     verifyWaitTime: number;
     proveWaitTime: number;
     privateKey: string;
+    relayerWhitelistedChains: string[];
 }
 
 /**
@@ -19,5 +20,6 @@ export default (): AxelarConfig => {
         verifyWaitTime: 9_000,
         proveWaitTime: 9_000,
         privateKey: "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
+        relayerWhitelistedChains: ["avalanche-fuji"],
     });
 };

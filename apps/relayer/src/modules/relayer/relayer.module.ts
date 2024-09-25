@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
-import { RelayerService } from "./relayer.service";
-import { RelayerController } from "./relayer.controller";
+import { GmpRelayerService } from "./gmp-relayer.service";
+import { ItsRelayerService } from "./its-relayer.service";
 
 @Module({
     imports: [],
-    providers: [RelayerService],
-    controllers: [RelayerController],
+    providers: [GmpRelayerService, ItsRelayerService],
+    controllers: [],
     exports: [],
 })
 export class RelayerModule {}

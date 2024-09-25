@@ -22,6 +22,7 @@
         "@aws-sdk/client-secrets-manager": "^3.266.1",
         "@backend/config": "workspace:*",
         "@backend/core": "workspace:*",
+        "@bloxer/ethers-typechain-contract": "0.0.5",
         "@nanogiants/nestjs-swagger-api-exception-decorator": "^1.6.5",
         "@nestjs/cli": "^10.3.0",
         "@nestjs/common": "^10.3.0",

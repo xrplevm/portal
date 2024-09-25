@@ -33,6 +33,7 @@ export class RelayerService {
      * @param payloadHash The payload hash.
      * @param payload The payload.
      */
+    // TODO: Implement
     async verifyMessages(
         hash: string,
         i: number,
@@ -67,6 +68,7 @@ export class RelayerService {
      * @param contractAddress The contract address.
      * @param payloadHash The payload hash.
      */
+    // TODO: Implement
     async executeMessage(
         txHash: string,
         logIndex: number,

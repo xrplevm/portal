@@ -29,7 +29,7 @@ export default (secrets: Record<any, any>): AxelarConfig => {
         externalRelayedChains: secrets.AXELAR_EXTERNAL_RELAYED_CHAINS || ["avalanche-fuji"],
         chainWebsockets: secrets.AXELAR_CHAIN_WEBSOCKETS || {
             "avalanche-fuji": "wss://api.avax-test.network/ext/bc/C/ws",
-            "xrpl-evm-sidechain": "wss://ws.xrplevm.org",
+            "xrpl-evm-sidechain": "ws://168.119.63.112:8546",
         },
         supportedChains: secrets.AXELAR_SUPPORTED_CHAINS || ["avalanche-fuji"],
         itsGasLimit: Number(secrets.AXELAR_ITS_GAS_LIMIT) || 8000000,

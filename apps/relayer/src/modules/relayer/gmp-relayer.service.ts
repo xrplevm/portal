@@ -8,7 +8,6 @@ import { id } from "ethers/lib/utils";
 import IAxelarExecutable from "@axelar-network/axelar-gmp-sdk-solidity/interfaces/IAxelarExecutable.json";
 import { sleep } from "../common/utils/sleep";
 import { ItsRelayerService } from "./its-relayer.service";
-import { TransactionRequest } from "@ethersproject/abstract-provider";
 
 @Injectable()
 export class GmpRelayerService {
@@ -129,7 +128,10 @@ export class GmpRelayerService {
      * @param multisigSessionId The multisig session ID.
      * @returns The transaction.
      */
-    async prepareRelayTransferTransaction(relayerRequest: RelayerEvmRequest, multisigSessionId: string): Promise<TransactionRequest> {
+    async prepareRelayTransferTransaction(
+        relayerRequest: RelayerEvmRequest,
+        multisigSessionId: string,
+    ): Promise<{ to: string; data: string }> {
         //@ts-ignore
         const destinationChainMultisigProver = axelarChains.axelar.contracts.MultisigProver[relayerRequest.destinationChain].address;
 
@@ -147,14 +149,9 @@ export class GmpRelayerService {
         const proof = JSON.parse(rawProof.toString());
         //@ts-ignore
         const gatewayAddress = axelarChains.chains[relayerRequest.destinationChain].contracts.AxelarGateway.address;
-        console.log({
-            to: gatewayAddress,
-            data: `0x${proof.data.status.completed.execute_data}`,
-        });
         return {
             to: gatewayAddress,
             data: `0x${proof.data.status.completed.execute_data}`,
-            value: 0,
         };
     }
 
@@ -163,14 +160,23 @@ export class GmpRelayerService {
      * @param relayerRequest The relayer request.
      */
     async prepareExecuteItsTransfer(relayerRequest: RelayerEvmRequest): Promise<void> {
-        const commandId = id(`${relayerRequest.destinationChain}_${relayerRequest.messageId}`);
+        Logger.log(`Executing ITS transfer for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
+        const commandId = id(`${relayerRequest.sourceChain}_${relayerRequest.messageId}`);
         // @ts-ignore
         const destinationIts = axelarChains.chains[relayerRequest.destinationChain].contracts.InterchainTokenService.address;
         // @ts-ignore
         const provider = new providers.JsonRpcProvider(axelarChains.chains[relayerRequest.destinationChain].rpc);
         const wallet = new Wallet(this.privateKey, provider);
         const appContract = new Contract(destinationIts, IAxelarExecutable.abi, wallet);
-        const tx = await appContract.execute(commandId, relayerRequest.sourceChain, relayerRequest.sourceAddress, relayerRequest.payload);
+        const tx = await appContract.execute(
+            commandId,
+            relayerRequest.sourceChain,
+            relayerRequest.sourceAddress,
+            `0x${relayerRequest.payload}`,
+            {
+                gasLimit: 500000,
+            },
+        );
         await tx.wait();
     }
 
@@ -179,11 +185,18 @@ export class GmpRelayerService {
      * @param chain The chain.
      * @param transaction The transaction.
      */
-    async signAndSubmitTransaction(chain: string, transaction: TransactionRequest): Promise<void> {
+    async signAndSubmitTransaction(chain: string, transaction: { to: string; data: string }): Promise<void> {
+        Logger.log(`Relaying transaction to ${chain}`);
         // @ts-ignore
         const provider = new providers.JsonRpcProvider(axelarChains.chains[chain].rpc);
         const wallet = new Wallet(this.privateKey, provider);
-        await wallet.sendTransaction(transaction).then((tx) => tx.wait());
+        const tx = await wallet.sendTransaction({
+            from: wallet.address,
+            to: transaction.to,
+            data: transaction.data,
+            value: "0",
+        });
+        await tx.wait();
     }
 
     /**
@@ -215,6 +228,7 @@ export class GmpRelayerService {
      * @param multisigSessionId The multisig session ID.
      */
     async relayTransactionToEvm(relayerRequest: RelayerEvmRequest, multisigSessionId: string): Promise<void> {
+        Logger.log(`Relaying message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         const relayTransferTransaction = await this.prepareRelayTransferTransaction(relayerRequest, multisigSessionId);
         await this.signAndSubmitTransaction(relayerRequest.destinationChain, relayTransferTransaction);
         await this.prepareExecuteItsTransfer(relayerRequest);

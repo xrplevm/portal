@@ -20,9 +20,9 @@ export default (): AxelarConfig => {
     return buildConfig<AxelarConfig>({
         rpcUrl: "http://devnet-amplifier.axelar.dev:26657",
         chainId: "devnet-amplifier",
-        externalRelayWaitTime: 9_000,
-        verifyWaitTime: 9_000,
-        proveWaitTime: 9_000,
+        externalRelayWaitTime: 15_000,
+        verifyWaitTime: 15_000,
+        proveWaitTime: 15_000,
         privateKey: "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
         externalRelayedChains: ["avalanche-fuji"],
         chainWebsockets: {

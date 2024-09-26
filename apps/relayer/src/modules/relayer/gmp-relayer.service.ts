@@ -18,7 +18,7 @@ export class GmpRelayerService {
     private readonly externalRelayWaitTime: number;
     private readonly privateKey: string;
     private readonly externalRelayedChains: string[];
-
+    private readonly itsGasLimit: number;
     constructor(
         @Inject(ConfigService) private readonly configService: ConfigService,
         private readonly itsRelayerService: ItsRelayerService,
@@ -30,6 +30,7 @@ export class GmpRelayerService {
         this.externalRelayWaitTime = this.configService.get<number>("axelar.externalRelayWaitTime")!;
         this.privateKey = this.configService.get<string>("axelar.privateKey")!;
         this.externalRelayedChains = this.configService.get<string[]>("axelar.externalRelayedChains")!;
+        this.itsGasLimit = this.configService.get<number>("axelar.itsGasLimit")!;
     }
 
     /**
@@ -174,7 +175,7 @@ export class GmpRelayerService {
             relayerRequest.sourceAddress,
             `0x${relayerRequest.payload}`,
             {
-                gasLimit: 500000,
+                gasLimit: this.itsGasLimit,
             },
         );
         await tx.wait();

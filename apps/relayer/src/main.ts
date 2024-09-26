@@ -1,9 +1,11 @@
 import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import helmet from "helmet";
 import morgan from "morgan";
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from "nest-winston";
 import * as winston from "winston";
 import { AppModule } from "./app.module";
+import * as packageJson from "../package.json";
 import { ConfigService } from "@nestjs/config";
 
 /**
@@ -36,6 +38,17 @@ async function bootstrap(): Promise<void> {
 
     if (configService.get("server.enableCors")) {
         app.enableCors();
+    }
+    const options = new DocumentBuilder()
+        .setTitle(packageJson.name)
+        .setDescription(packageJson.description)
+        .setVersion(packageJson.version)
+        .addBearerAuth()
+        .build();
+    const document = SwaggerModule.createDocument(app, options, { operationIdFactory: (_m, method) => method });
+
+    if (configService.get("server.enableSwagger")) {
+        SwaggerModule.setup("swagger", app, document);
     }
 
     await app.listen(serverPort);

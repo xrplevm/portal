@@ -10,6 +10,7 @@ interface AxelarConfig {
     externalRelayedChains: string[];
     chainWebsockets: Record<string, string>;
     supportedChains: string[];
+    itsGasLimit: number;
 }
 
 /**
@@ -18,17 +19,18 @@ interface AxelarConfig {
  */
 export default (): AxelarConfig => {
     return buildConfig<AxelarConfig>({
-        rpcUrl: "http://devnet-amplifier.axelar.dev:26657",
-        chainId: "devnet-amplifier",
-        externalRelayWaitTime: 15_000,
-        verifyWaitTime: 15_000,
-        proveWaitTime: 15_000,
-        privateKey: "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
+        rpcUrl: process.env.AXELAR_RPC_URL || "http://devnet-amplifier.axelar.dev:26657",
+        chainId: process.env.AXELAR_CHAIN_ID || "devnet-amplifier",
+        externalRelayWaitTime: Number(process.env.AXELAR_EXTERNAL_RELAY_WAIT_TIME) || 15_000,
+        verifyWaitTime: Number(process.env.AXELAR_VERIFY_WAIT_TIME) || 15_000,
+        proveWaitTime: Number(process.env.AXELAR_PROVE_WAIT_TIME) || 15_000,
+        privateKey: process.env.AXELAR_PRIVATE_KEY || "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
         externalRelayedChains: ["avalanche-fuji"],
         chainWebsockets: {
             "avalanche-fuji": "wss://api.avax-test.network/ext/bc/C/ws",
             "xrpl-evm-sidechain": "ws://168.119.63.112:8546",
         },
-        supportedChains: ["xrpl-evm-sidechain", "avalanche-fuji"],
+        supportedChains: ["avalanche-fuji"],
+        itsGasLimit: Number(process.env.AXELAR_ITS_GAS_LIMIT) || 8000000,
     });
 };

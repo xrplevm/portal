@@ -8,8 +8,10 @@ import axelarChains from "../../config/axelar-chains.json";
 export class ItsRelayerService {
     private readonly axelarChainId: string;
     private readonly axelarRpc: string;
+    private readonly logger: Logger;
 
     constructor(@Inject(ConfigService) private readonly configService: ConfigService) {
+        this.logger = new Logger(ItsRelayerService.name);
         this.axelarChainId = this.configService.get<string>("axelar.chainId")!;
         this.axelarRpc = this.configService.get<string>("axelar.rpcUrl")!;
     }
@@ -31,7 +33,7 @@ export class ItsRelayerService {
         const axelarnetGateway = axelarChains.axelar.contracts.AxelarnetGateway.address;
 
         // 00. Verify the message
-        Logger.log(`Executing ITS Hub message ${relayerRequest.messageId} on ${relayerRequest.sourceChain}`);
+        this.logger.log(`Executing ITS Hub message ${relayerRequest.messageId} on ${relayerRequest.sourceChain}`);
         const contractCall = {
             execute: {
                 cc_id: {

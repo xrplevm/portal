@@ -1,12 +1,9 @@
 import { NestFactory } from "@nestjs/core";
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import * as fs from "fs";
 import helmet from "helmet";
 import morgan from "morgan";
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from "nest-winston";
 import * as winston from "winston";
 import { AppModule } from "./app.module";
-import * as packageJson from "../package.json";
 import { ConfigService } from "@nestjs/config";
 
 /**

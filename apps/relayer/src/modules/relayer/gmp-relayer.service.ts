@@ -174,7 +174,7 @@ export class GmpRelayerService {
             relayerRequest.sourceAddress,
             `0x${relayerRequest.payload}`,
             {
-                gasLimit: 500000,
+                gasLimit: 1000000,
             },
         );
         await tx.wait();

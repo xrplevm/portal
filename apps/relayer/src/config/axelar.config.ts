@@ -27,7 +27,7 @@ export default (): AxelarConfig => {
         externalRelayedChains: ["avalanche-fuji"],
         chainWebsockets: {
             "avalanche-fuji": "wss://api.avax-test.network/ext/bc/C/ws",
-            "xrpl-evm-sidechain": "wss://ws.xrplevm.org",
+            "xrpl-evm-sidechain": "ws://168.119.63.112:8546",
         },
         supportedChains: ["xrpl-evm-sidechain", "avalanche-fuji"],
     });

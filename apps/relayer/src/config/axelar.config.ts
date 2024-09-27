@@ -30,7 +30,7 @@ export default (): AxelarConfig => {
             "avalanche-fuji": "wss://api.avax-test.network/ext/bc/C/ws",
             "xrpl-evm-sidechain": "ws://168.119.63.112:8546",
         },
-        supportedChains: ["avalanche-fuji"],
+        supportedChains: ["xrpl-evm-sidechain", "avalanche-fuji"],
         itsGasLimit: Number(process.env.AXELAR_ITS_GAS_LIMIT) || 8000000,
     });
 };

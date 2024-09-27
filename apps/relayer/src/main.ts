@@ -1,6 +1,5 @@
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import * as fs from "fs";
 import helmet from "helmet";
 import morgan from "morgan";
 import { utilities as nestWinstonModuleUtilities, WinstonModule } from "nest-winston";
@@ -47,7 +46,6 @@ async function bootstrap(): Promise<void> {
         .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, options, { operationIdFactory: (_m, method) => method });
-    fs.writeFileSync("./openapi-spec.json", JSON.stringify(document));
 
     if (configService.get("server.enableSwagger")) {
         SwaggerModule.setup("swagger", app, document);

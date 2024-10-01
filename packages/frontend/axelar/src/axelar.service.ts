@@ -127,4 +127,10 @@ export class AxelarService implements IAxelarService {
             throw new ServiceError(AxelarErrors.GET_BRIDGE_TOKENS_PARSE_ERROR);
         }
     }
+
+    /**
+     * Get paginated transfers.
+     * @returns The paginated transfers.
+     */
+    async getPaginatedTransfers(): Promise<any> {}
 }

@@ -1,7 +1,7 @@
 import { ActivityController } from "../../../../src/domain/controllers/activity.controller";
 import { ActivityServiceMock } from "../../../mocks/domain/interfaces/activity.service.mock";
 
-// TODO: https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4
+// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 describe("ActivityController", () => {
     let activityController: ActivityController;
 

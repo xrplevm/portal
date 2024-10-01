@@ -3,7 +3,7 @@ import { getInstance } from "@frontend/core/common/utils/singleton";
 import { ActivityController } from "../../domain/controllers";
 import { useBridgeChainsState, useBridgeWalletsState } from "@frontend/bridge/ui/state";
 
-// TODO: https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4
+// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 export interface UseGetPaginatedTransfersProps {
     page: number;
     pageSize: number;
@@ -44,14 +44,15 @@ export function useGetPaginatedTransfers(_: UseGetPaginatedTransfersProps = { pa
     // const _bridgeChainsState = useBridgeChainsState();
     // const _bridgeWalletsState = useBridgeWalletsState();
 
-    const queryEnabled = usePaginatedTransfersEnabled();
+    // const queryEnabled = usePaginatedTransfersEnabled();
     const queryKey = getPaginatedTransfersQueryKey();
 
     // TODO: Define getPaginatedTransfers params
     return useInfiniteQuery({
         queryKey,
         queryFn: () => getInstance(ActivityController).getPaginatedTransfers(),
-        enabled: queryEnabled,
+        // enabled: queryEnabled,
+        enabled: false,
         staleTime: 3000,
         // TODO: Set pagination (https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4)
         getNextPageParam: (lastPage) => lastPage.page + 1,

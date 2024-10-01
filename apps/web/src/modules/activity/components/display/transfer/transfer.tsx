@@ -29,7 +29,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                     <Row alignItems="center" gap={spacing[4]}>
                         <TransferToken
                             tokenImageUrl={transfer.lockingChainToken.imageUrl}
-                            lockingChainImageUrl={transfer.lockingChain.imageUrl}
+                            nativeChainImageUrl={transfer.lockingChain.imageUrl}
                         />
                         <Col justifyContent="center" alignItems="start">
                             <Row gap={spacing[2]}>

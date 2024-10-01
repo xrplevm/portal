@@ -1,3 +1,3 @@
-export enum XrplSignerError {
+export enum XrplSignerErrors {
     TRANSACTION_SUBMISSION_FAILED = "TRANSACTION_SUBMISSION_FAILED",
 }

@@ -1,28 +1,18 @@
-import {
-    ChainType,
-    Unconfirmed,
-    TrustClaimTransaction,
-    FormattedBridge,
-    TrustCommitTransaction,
-    XChainWallet,
-    CreateBridgeRequestTransaction,
-} from "xchain-sdk";
 import { WalletProviderConnectionError, WalletProviderId } from "../../types";
 import { EventEmitter } from "@frontend/events";
 import { Chain } from "@frontend/chain";
+import { Token } from "@frontend/token";
+import { Transaction, Unconfirmed } from "@shared/modules/blockchain";
+import { ChainType } from "@shared/modules/chain";
 
 export type WalletProviderEvents = {
     setChain: (chain: Chain | undefined) => void;
-    // TODO: Delete isChainValid on double metamask refactor
-    connect: (address: string, isChainValid: boolean) => void;
+    connect: (address: string) => void;
     disconnect: () => void;
     connectionError: (error: WalletProviderConnectionError, message: string) => void;
-    // TODO: Delete on double metamask refactor
-    invalidChain: () => void;
-    validChain: () => void;
 };
 
-export interface IWalletProvider extends XChainWallet {
+export interface IWalletProvider {
     providerId: WalletProviderId;
     type: ChainType;
     address: string;
@@ -34,78 +24,55 @@ export interface IWalletProvider extends XChainWallet {
      */
     on: EventEmitter<WalletProviderEvents>["on"];
     /**
-     * Checks if the wallet provider is a multiple chain wallet provider.
-     * @returns If the wallet provider is a multiple chain wallet provider.
+     * Transfers an amount of a token to a destination address on a destination chain.
+     * @param amount The amount to transfer.
+     * @param token The token to transfer.
+     * @param destinationChain The destination chain.
+     * @param destinationAddress The destination address.
      */
-    isMultipleChain(): this is IMultipleChainWalletProvider;
+    transfer(amount: string, token: Token, destinationChain: Chain, destinationAddress: string): Promise<Unconfirmed<Transaction>>;
 }
 
-export interface ITrustClaimWalletProvider extends IWalletProvider {
+export interface ITrustReceiptWalletProvider extends IWalletProvider {
     /**
-     * Checks if a trust claim is required for the bridge.
-     * @param bridge The bridge to check.
-     * @returns If a trust claim is required.
+     * Checks if a trust receipt is required for a token.
+     * @param token The token to check.
+     * @returns If a trust receipt is required.
      */
-    isTrustClaimRequired(bridge: FormattedBridge): boolean;
+    isTrustReceiptRequired(token: Token): boolean;
     /**
-     * Trusts a claim for the bridge.
-     * @param bridge The bridge to trust.
-     * @returns The unconfirmed trust claim transaction.
+     * Trusts a receipt for a token.
+     * @param token The token to trust.
+     * @param amount The amount to receive.
+     * @returns The unconfirmed trust receipt transaction.
      */
-    trustClaim(bridge: FormattedBridge): Promise<Unconfirmed<TrustClaimTransaction>>;
+    trustReceipt(token: Token, amount: string): Promise<Unconfirmed<Transaction>>;
     /**
-     * Checks if a claim is trusted.
-     * @param bridge The bridge to check.
-     * @returns If the claim is trusted.
+     * Checks if a receipt is trusted for a token.
+     * @param token The token to check.
+     * @returns If the receipt is trusted.
      */
-    isClaimTrusted(bridge: FormattedBridge): Promise<boolean>;
+    isReceiptTrusted(token: Token): Promise<boolean>;
 }
 
-export interface ITrustCommitWalletProvider extends IWalletProvider {
+export interface ITrustTransferWalletProvider extends IWalletProvider {
     /**
-     * Checks if a trust commit is required for the bridge.
-     * @param bridge The bridge to check.
-     * @returns If a trust commit is required.
+     * Checks if a trust transfer is required for a token.
+     * @param token The token to check.
+     * @returns If a trust transfer is required.
      */
-    isTrustCommitRequired(bridge: FormattedBridge): boolean;
+    isTrustTransferRequired(token: Token): boolean;
     /**
-     * Trusts a commit for the bridge.
-     * @param bridge The bridge to trust.
+     * Trusts a transfer for a token.
+     * @param token The token to trust.
+     * @param amount The amount to transfer.
      * @returns The unconfirmed trust commit transaction.
      */
-    trustCommit(bridge: FormattedBridge): Promise<Unconfirmed<TrustCommitTransaction>>;
+    trustTransfer(token: Token, amount: string): Promise<Unconfirmed<Transaction>>;
     /**
-     * Checks if a commit is trusted.
-     * @param bridge The bridge to check.
-     * @returns If the commit is trusted.
+     * Checks if a transfer is trusted for a token.
+     * @param token The token to check.
+     * @returns If the transfer is trusted.
      */
-    isCommitTrusted(bridge: FormattedBridge): Promise<boolean>;
-}
-
-export interface IMultipleChainWalletProvider extends IWalletProvider {
-    /**
-     * Adds a chain to the wallet provider.
-     * @returns If the chain was added.
-     */
-    addChain(): Promise<void>;
-    /**
-     * Switches to a chain.
-     * @returns If the chain was switched.
-     */
-    switchToChain(): Promise<void>;
-}
-
-export interface ICreateBridgeRequestWalletProvider extends IWalletProvider {
-    /**
-     * Creates a bridge request.
-     * @param doorAddress The door address.
-     * @param tokenAddress The token address.
-     * @param issuingDoorAddress The issuing door address.
-     * @returns The unconfirmed bridge request transaction.
-     */
-    createBridgeRequest(
-        doorAddress: string,
-        tokenAddress: string,
-        issuingDoorAddress: string,
-    ): Promise<Unconfirmed<CreateBridgeRequestTransaction>>;
+    isTransferTrusted(token: Token): Promise<boolean>;
 }

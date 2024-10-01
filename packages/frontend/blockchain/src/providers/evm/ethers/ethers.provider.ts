@@ -1,7 +1,7 @@
 import { IEthersProvider } from "./interfaces/i-ethers.provider";
 import { Token } from "@frontend/token";
 import { ethers } from "ethers";
-import { ERC20 } from "@shared/evm/contracts";
+import { ERC20, InterchainTokenService } from "@shared/evm/contracts";
 import BigNumber from "bignumber.js";
 
 export class EthersProvider implements IEthersProvider {
@@ -10,11 +10,18 @@ export class EthersProvider implements IEthersProvider {
     /**
      * @inheritdoc
      */
-    private getTokenContract(
-        tokenAddress: string,
+    getERC20Contract(address: string, signerOrProvider: ethers.Signer | ethers.providers.Provider = this.ethersProvider): ERC20 {
+        return new ERC20(address, signerOrProvider);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    getInterchainTokenServiceContract(
+        address: string,
         signerOrProvider: ethers.Signer | ethers.providers.Provider = this.ethersProvider,
-    ): ERC20 {
-        return new ERC20(tokenAddress, signerOrProvider);
+    ): InterchainTokenService {
+        return new InterchainTokenService(address, signerOrProvider);
     }
 
     /**
@@ -51,7 +58,7 @@ export class EthersProvider implements IEthersProvider {
      * @returns The balance.
      */
     async getERC20Balance(address: string, tokenAddress: string): Promise<string> {
-        const tokenContract = this.getTokenContract(tokenAddress);
+        const tokenContract = this.getERC20Contract(tokenAddress);
         const balance = await tokenContract.balanceOf(address);
         return balance.toString();
     }
@@ -62,5 +69,14 @@ export class EthersProvider implements IEthersProvider {
     async getTokenBalance(address: string, token: Token): Promise<string> {
         if (token.isNative()) return this.getNativeBalance(address);
         else return this.getERC20Balance(address, token.address!);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async isERC20Approved(token: string, owner: string, spender: string): Promise<boolean> {
+        const tokenContract = this.getERC20Contract(token);
+        const approved = await tokenContract.allowance(owner, spender);
+        return approved.gt(0);
     }
 }

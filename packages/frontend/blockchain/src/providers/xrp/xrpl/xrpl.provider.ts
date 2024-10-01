@@ -1,4 +1,4 @@
-import { Client, RippledError, xrpToDrops } from "xrpl";
+import { Client, RippledError, SubmittableTransaction, xrpToDrops } from "xrpl";
 import { IXrplProvider } from "./interfaces/i-xrpl.provider";
 import BigNumber from "bignumber.js";
 import { convertCurrencyCode } from "@shared/xrpl/currency-code";
@@ -8,12 +8,72 @@ import { Token } from "@frontend/token";
 import { withAutoConnect } from "@shared/xrpl/client";
 import { ProviderError } from "../../core/error";
 import { XrplProviderErrors } from "./xrpl.provider.errors";
+import { SubmitTransactionResponse, TxResponse, TxResponseResult } from "@shared/xrpl/transaction";
+import { MAX_VALIDATION_TRIES, VALIDATION_POLLING_INTERVAL } from "../../../transaction-parsers/xrp/xrpl/xrpl.transaction-parser.constants";
+import { AwaitTransactionOptions } from "../../../transaction-parsers/xrp/xrpl/interfaces/i-xrpl-transaction-parser.provider";
+import { polling } from "@shared/utils";
 
 export class XrplProvider implements IXrplProvider {
     readonly xrplClient: Client;
 
     constructor(client: Client) {
         this.xrplClient = withAutoConnect(client);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    autofill<T extends SubmittableTransaction>(transaction: T, signersCount?: number): Promise<T> {
+        return this.xrplClient.autofill(transaction, signersCount);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    submit<T extends SubmittableTransaction>(transaction: string): Promise<SubmitTransactionResponse<T>> {
+        return this.xrplClient.submit(transaction) as Promise<SubmitTransactionResponse<T>>;
+    }
+
+    /**
+     * Gets a transaction response from its hash.
+     * @param hash The hash of the transaction.
+     * @returns The transaction response.
+     */
+    async getTransaction<T extends SubmittableTransaction>(hash: string): Promise<TxResponseResult<T>> {
+        const txResult = (await this.xrplClient.request({ command: "tx", transaction: hash })) as TxResponse<T>;
+        return txResult.result;
+    }
+
+    /**
+     * Checks if a transaction is validated.
+     * @param hash The hash of the transaction.
+     * @returns True if the transaction is validated, false otherwise.
+     */
+    async isTransactionValidated(hash: string): Promise<boolean> {
+        const tx = await this.getTransaction(hash);
+        return !!tx.validated;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async awaitTransaction<T extends SubmittableTransaction = SubmittableTransaction>(
+        hash: string,
+        {
+            validationPollingInterval = VALIDATION_POLLING_INTERVAL,
+            maxValidationTries = MAX_VALIDATION_TRIES,
+        }: AwaitTransactionOptions = {},
+    ): Promise<TxResponseResult<T>> {
+        await polling(
+            () => this.isTransactionValidated(hash),
+            (res) => !res,
+            {
+                delay: validationPollingInterval,
+                maxIterations: maxValidationTries,
+            },
+        );
+        const txResult = await this.getTransaction<T>(hash);
+        return txResult;
     }
 
     /**
@@ -100,5 +160,14 @@ export class XrplProvider implements IXrplProvider {
     async getTokenBalance(address: string, token: Token): Promise<string> {
         if (token.isNative()) return this.getNativeBalance(address);
         else return this.getIOUBalance(address, token.address!, token.symbol);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async accountHasTrustLine(address: string, issuer: string, currency: string): Promise<boolean> {
+        const convertedCurrency = convertCurrencyCode(currency);
+        const accountLinesRes = await this.xrplClient.request({ command: "account_lines", account: address });
+        return !!accountLinesRes.result.lines.find((line) => line.currency === convertedCurrency && line.account === issuer);
     }
 }

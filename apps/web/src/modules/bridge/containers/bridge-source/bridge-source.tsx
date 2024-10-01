@@ -21,13 +21,13 @@ export function BridgeSource({ source, style, className }: BridgeSourceProps): J
                 <BridgeChainSelector
                     label={translate("network")}
                     source={source}
-                    css={{ borderBottomLeftRadius: "0 !important", borderBottomRightRadius: "0 !important" }}
+                    style={{ borderBottomLeftRadius: "0", borderBottomRightRadius: "0" }}
                 />
                 <Divider />
                 <BridgeWalletSelector
                     label={translate("wallet")}
                     side={source}
-                    css={{ borderTopLeftRadius: "0 !important", borderTopRightRadius: "0 !important" }}
+                    style={{ borderTopLeftRadius: "0", borderTopRightRadius: "0" }}
                 />
             </Col>
         </FormGroup>

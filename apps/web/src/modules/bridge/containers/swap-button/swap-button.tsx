@@ -21,7 +21,7 @@ export function SwapButton({ style, className }: SwapButtonProps): JSX.Element {
             style={style}
             className={clsx("SwapButton", className)}
         >
-            <ExchangeIcon css={{ fontSize: "1.25rem" }} />
+            <ExchangeIcon style={{ fontSize: "1.25rem" }} />
         </SwapButtonRoot>
     );
 }

@@ -1,19 +1,26 @@
-import {
-    ChainType,
-    ClaimId,
-    CommitTransaction,
-    CreateAccountCommitTransaction,
-    CreateClaimTransaction,
-    FormattedBridge,
-    TrustCommitTransaction,
-    Unconfirmed,
-    XrplXChainSigner,
-} from "xchain-sdk";
-import { IXrplSigner } from "../interfaces/i-xrp.signer";
-import { XrplSignerError } from "./xrpl.signer.errors";
+import { IXrplSigner } from "./interfaces/i-xrpl.signer";
+import { XrplSignerErrors } from "./xrpl.signer.errors";
 import { SignerError } from "../../core/error";
+import { XrplTransactionParser } from "../../../transaction-parsers/xrp/xrpl/xrpl.transaction-parser";
+import { convertStringToHex, Payment, SubmittableTransaction, TrustSet, Wallet } from "xrpl";
+import { IXrplSignerProvider } from "./interfaces/i-xrpl-signer.provider";
+import { SubmitTransactionResponse } from "@shared/xrpl/transaction";
+import { convertCurrencyCode } from "@shared/xrpl/currency-code";
+import { MAX_SAFE_IOU_AMOUNT } from "@shared/xrpl";
+import { Chain } from "@frontend/chain";
+import { Token } from "@frontend/token";
+import { Unconfirmed, Transaction } from "@shared/modules/blockchain";
 
-export class XrplSigner extends XrplXChainSigner<any> implements IXrplSigner {
+export class XrplSigner<Provider extends IXrplSignerProvider = IXrplSignerProvider> implements IXrplSigner {
+    protected readonly transactionParser: XrplTransactionParser;
+
+    constructor(
+        protected readonly wallet: Wallet,
+        readonly provider: Provider,
+    ) {
+        this.transactionParser = new XrplTransactionParser(provider);
+    }
+
     /**
      * Handles service errors.
      * @param e Error.
@@ -23,7 +30,7 @@ export class XrplSigner extends XrplXChainSigner<any> implements IXrplSigner {
             const transactionSubmissionFiledMatches = /Transaction submission failed with code: (\b.+$)/.exec(e.message);
             if (transactionSubmissionFiledMatches) {
                 const code = transactionSubmissionFiledMatches[1];
-                throw new SignerError(XrplSignerError.TRANSACTION_SUBMISSION_FAILED, { code });
+                throw new SignerError(XrplSignerErrors.TRANSACTION_SUBMISSION_FAILED, { code });
             } else {
                 throw e;
             }
@@ -35,9 +42,42 @@ export class XrplSigner extends XrplXChainSigner<any> implements IXrplSigner {
     /**
      * @inheritdoc
      */
-    async setTrustLine(issuer: string, currency: string, limitAmount?: string): Promise<Unconfirmed<TrustCommitTransaction>> {
+    getAddress(): Promise<string> {
+        return Promise.resolve(this.wallet.address);
+    }
+
+    /**
+     * Signs and submits a transaction.
+     * @param tx The transaction to sign and submit.
+     * @returns The transaction response.
+     */
+    private async signAndSubmitTransaction<T extends SubmittableTransaction>(tx: T): Promise<SubmitTransactionResponse<T>> {
+        const completeTx = await this.provider.autofill(tx);
+        const signedTx = this.wallet.sign(completeTx).tx_blob;
+        const res = await this.provider.submit(signedTx);
+
+        if (res.result.engine_result !== "tesSUCCESS") {
+            throw new SignerError(XrplSignerErrors.TRANSACTION_SUBMISSION_FAILED, { code: res.result.engine_result });
+        }
+
+        return res as SubmitTransactionResponse<T>;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async setTrustLine(issuer: string, currency: string, limitAmount = MAX_SAFE_IOU_AMOUNT): Promise<Unconfirmed<Transaction>> {
         try {
-            return await super.setTrustLine(issuer, currency, limitAmount);
+            const submitTxResponse = await this.signAndSubmitTransaction<TrustSet>({
+                TransactionType: "TrustSet",
+                Account: this.wallet.address,
+                LimitAmount: {
+                    currency: convertCurrencyCode(currency),
+                    issuer: issuer,
+                    value: limitAmount,
+                },
+            });
+            return this.transactionParser.parseSubmitTransactionResponse(submitTxResponse);
         } catch (e) {
             return this.handleError(e);
         }
@@ -46,40 +86,51 @@ export class XrplSigner extends XrplXChainSigner<any> implements IXrplSigner {
     /**
      * @inheritdoc
      */
-    async createClaim(originAddress: string, bridge: FormattedBridge<ChainType.XRP>): Promise<Unconfirmed<CreateClaimTransaction>> {
-        try {
-            return await super.createClaim(originAddress, bridge);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async commit(
-        claimId: ClaimId,
-        destinationAddress: string,
-        bridge: FormattedBridge<ChainType.XRP>,
+    async transfer(
         amount: string,
-    ): Promise<Unconfirmed<CommitTransaction>> {
-        try {
-            return await super.commit(claimId, destinationAddress, bridge, amount);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createAccountCommit(
+        token: Token,
+        doorAddress: string,
+        destinationChain: Chain,
         destinationAddress: string,
-        bridge: FormattedBridge<ChainType.XRP>,
-        amount: string,
-    ): Promise<Unconfirmed<CreateAccountCommitTransaction>> {
+    ): Promise<Unconfirmed<Transaction>> {
         try {
-            return await super.createAccountCommit(destinationAddress, bridge, amount);
+            const submitTxResponse = await this.signAndSubmitTransaction<Payment>({
+                TransactionType: "Payment",
+                Account: this.wallet.address,
+                // TODO: Handle IOU decimal values
+                Amount: token.isNative()
+                    ? amount
+                    : {
+                          currency: convertCurrencyCode(token.symbol),
+                          value: amount,
+                          issuer: token.address!,
+                      },
+                Destination: doorAddress,
+                Memos: [
+                    {
+                        Memo: {
+                            MemoType: "605459C28E6bE7B31B8b622FD29C82B3059dB1C6", // hex(destination_address)
+                            MemoData: destinationAddress.startsWith("0x")
+                                ? destinationAddress.slice(2)
+                                : convertStringToHex(destinationAddress),
+                        },
+                    },
+                    {
+                        Memo: {
+                            MemoType: "64657374696E6174696F6E5F636861696E", // hex(destination_chain)
+                            MemoData: convertStringToHex(destinationChain.id),
+                        },
+                    },
+                    {
+                        Memo: {
+                            MemoType: "7061796C6F61645F68617368", // hex(payload_hash)
+                            MemoData: "0000000000000000000000000000000000000000000000000000000000000000",
+                        },
+                    },
+                ],
+            });
+
+            return this.transactionParser.parseSubmitTransactionResponse(submitTxResponse);
         } catch (e) {
             return this.handleError(e);
         }

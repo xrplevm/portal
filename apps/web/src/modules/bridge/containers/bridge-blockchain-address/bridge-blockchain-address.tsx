@@ -1,9 +1,9 @@
-import { useBridgeSourceChainState } from "@frontend/bridge/ui/hooks";
-import { ChainBlockchainAddress } from "@frontend/design-system-react/chain-blockchain-address";
+import { Hash } from "@frontend/design-system-react/hash";
 import { BridgeBlockchainAddressProps } from "./bridge-blockchain-address.types";
+import { useGetBridgeExplorerUrl } from "./hooks/useGetBridgeExplorerUrl";
 
-export function BridgeBlockchainAddress({ source: side, ...blockchainAddressProps }: BridgeBlockchainAddressProps): JSX.Element {
-    const chain = useBridgeSourceChainState(side, true);
+export function BridgeBlockchainAddress({ type, address, ...rest }: BridgeBlockchainAddressProps): JSX.Element {
+    const explorerUrl = useGetBridgeExplorerUrl(address, type);
 
-    return <ChainBlockchainAddress chain={chain} {...blockchainAddressProps} />;
+    return <Hash url={explorerUrl} hash={address} {...rest} />;
 }

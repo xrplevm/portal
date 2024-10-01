@@ -58,6 +58,6 @@ export class Explorer {
      * @returns The url for the transaction.
      */
     getTransactionUrl(transaction: string): string {
-        return this.url + this.paths.transaction.replace("{transaction}", transaction);
+        return this.url + this.paths.transaction.replace("{tx}", transaction);
     }
 }

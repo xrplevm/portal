@@ -1,4 +1,4 @@
 export enum EvmWalletProviderErrors {
-    CANNOT_TRUST_COMMIT_WITH_NATIVE_TOKEN = "cannotTrustCommitWithNativeToken",
-    CANNOT_CHECK_COMMIT_TRUST_WITH_NATIVE_TOKEN = "cannotCheckCommitTrustWithNativeToken",
+    CANNOT_TRUST_TRANSFER_WITH_NATIVE_TOKEN = "cannotTrustTransferWithNativeToken",
+    CANNOT_CHECK_TRANSFER_TRUST_WITH_NATIVE_TOKEN = "cannotCheckTransferTrustWithNativeToken",
 }

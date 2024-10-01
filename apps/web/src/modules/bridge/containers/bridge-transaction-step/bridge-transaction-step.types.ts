@@ -1,7 +1,7 @@
-import { BridgeTransferStage } from "xchain-sdk";
+import { BridgeTransferStage } from "@frontend/bridge";
 
 export type BridgeTransactionStepProps = {
-    stage: Exclude<BridgeTransferStage, "attestations">;
+    stage: Exclude<BridgeTransferStage, BridgeTransferStage.IDLE | BridgeTransferStage.AWAIT_RECEIPT>;
     /**
      * Required as the first {stage}Requested event is fired before rendering the component
      */

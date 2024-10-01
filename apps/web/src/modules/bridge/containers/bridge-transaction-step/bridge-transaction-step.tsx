@@ -7,9 +7,9 @@ import { ControllerFactory } from "@frontend/core/domain/controller/factory";
 import { UIError } from "@frontend/core/ui/error";
 import { LocaleErrorResource, LocaleTranslationResource } from "@frontend/locale";
 import { TransactionStep } from "@frontend/design-system-react/transaction-step";
-import { capitalize } from "@shared/string";
+import { upperFirst } from "@shared/string";
 
-function BridgeTransactionStep({ stage, isFirst = false }: BridgeTransactionStepProps): JSX.Element {
+export function BridgeTransactionStep({ stage, isFirst = false }: BridgeTransactionStepProps): JSX.Element {
     const translate = useTranslate();
     const translateError = useTranslate("error");
 
@@ -59,14 +59,14 @@ function BridgeTransactionStep({ stage, isFirst = false }: BridgeTransactionStep
         };
     }, [stage]);
 
-    if (bridgeWallet.connection !== "connected") throw new Error(`${capitalize(bridgeSide)} wallet is not connected`);
+    if (bridgeWallet.connection !== "connected") throw new Error(`${upperFirst(bridgeSide)} wallet is not connected`);
 
     return (
         <TransactionStep
             address={bridgeWallet.address}
             chain={bridgeChain}
             title={translate([
-                `${bridgeChain.type}${capitalize(stage)}StageTitle` as LocaleTranslationResource,
+                `${bridgeChain.type}${upperFirst(stage)}StageTitle` as LocaleTranslationResource,
                 `${stage}StageTitle` as LocaleTranslationResource,
             ])}
             subtitle={{
@@ -81,5 +81,3 @@ function BridgeTransactionStep({ stage, isFirst = false }: BridgeTransactionStep
         />
     );
 }
-
-export default BridgeTransactionStep;

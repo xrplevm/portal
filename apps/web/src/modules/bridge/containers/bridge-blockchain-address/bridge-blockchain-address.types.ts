@@ -1,6 +1,8 @@
-import { ChainBlockchainAddressProps } from "@frontend/design-system-react/chain-blockchain-address";
-import { BridgeSource } from "xchain-sdk";
+import { HashProps } from "@frontend/design-system-react/hash";
 
-export type BridgeBlockchainAddressProps = Omit<ChainBlockchainAddressProps, "chain" | "url"> & {
-    source: BridgeSource;
+export type BridgeBlockchainAddressType = "transfer";
+
+export type BridgeBlockchainAddressProps = Omit<HashProps, "url" | "type" | "hash"> & {
+    address: string;
+    type: BridgeBlockchainAddressType;
 };

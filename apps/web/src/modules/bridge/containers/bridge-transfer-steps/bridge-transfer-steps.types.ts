@@ -1,4 +1,4 @@
-import { BridgeTransferStartData } from "xchain-sdk";
+import { BridgeTransferStartData } from "@frontend/bridge";
 
 export type BridgeTransferStepsProps = {
     data: BridgeTransferStartData;

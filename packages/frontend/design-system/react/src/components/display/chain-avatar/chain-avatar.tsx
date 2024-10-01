@@ -7,7 +7,7 @@ export const ChainAvatar = ({ imageUrl, name }: ChainAvatarProps): JSX.Element =
     const networkType = getNetworkType(name);
 
     return (
-        <Row css={{ position: "relative", display: "inline-block" }}>
+        <Row style={{ position: "relative", display: "inline-block" }}>
             <ChainAvatarImg src={imageUrl} alt={`${name}-logo`} />
             {networkType !== NetworkType.MAINNET && <ChainNetworkBadge label={networkType} />}
         </Row>

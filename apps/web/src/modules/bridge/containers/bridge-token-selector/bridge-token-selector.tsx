@@ -29,7 +29,7 @@ export function BridgeTokenSelector({
     return (
         <BridgeTokenSelectorRoot gap={spacing[8]} className={clsx("BridgeTokenSelector", className)} style={style}>
             <TokenSelectorToolbar query={value} onQueryChange={handleChange} isLoading={tokenSelectorLoading} />
-            <Col flex={1} css={{ overflow: "hidden" }} gap={"1px" /* Avoids the divider of being hidden when scrolling */}>
+            <Col flex={1} style={{ overflow: "hidden" }} gap={"1px" /* Avoids the divider of being hidden when scrolling */}>
                 <Divider />
                 <BridgeTokenSelectorList
                     tokens={tokens}

@@ -1,2 +1,1 @@
-export * from "./i-xrp.signer";
-export * from "./i-xrpl-wallet-provider.signer";
+export * from "./i-xrp-wallet-provider.signer";

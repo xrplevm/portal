@@ -8,6 +8,6 @@ export const BridgeTokenMock = mockify<BridgeToken>({
     name: "XRP",
     id: "xrp",
     chains: {},
-    chain: new ChainMock(),
+    nativeChain: new ChainMock(),
     toChainToken: jest.fn().mockReturnValue(new TokenMock()),
 });

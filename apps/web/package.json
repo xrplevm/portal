@@ -28,7 +28,6 @@
         "@frontend/design-system-core": "workspace:*",
         "@frontend/design-system-react": "workspace:*",
         "@frontend/events": "workspace:*",
-        "@frontend/health": "workspace:*",
         "@frontend/locale": "workspace:*",
         "@frontend/misc": "workspace:*",
         "@frontend/query": "workspace:*",

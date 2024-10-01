@@ -8,7 +8,8 @@
         "build": "tsup",
         "clean": "rimraf .turbo dist node_modules",
         "lint": "eslint .",
-        "check-types": "npx tsc --noEmit"
+        "check-types": "npx tsc --noEmit",
+        "dist": "pnpm run build && node ../../../../scripts/prebuild-exports.cjs"
     },
     "exports": {
         "./palette": "./src/palette/index.ts",

@@ -13,7 +13,7 @@
     "invalid_number_lt": "El número debe de ser menor a {{n}}",
     "invalid_number_lte": "El número debe de ser menor o igual a {{n}}",
     "insufficientBalance": "No dispones de balance suficiente",
-    "attestationsError": "Ha ocurrido un error mientras se comprobaban las atestaciones",
+    "awaitReceiptError": "Ha ocurrido un error mientras se comprobaba la recepción de la transacción",
     "errorReceivingFaucetTokens": "Ha ocurrido un error recibiendo tokens del wallet",
     "walletConnectionRejected": "La conexión a {{provider}} ha sido rechazada",
     "walletConnectionFailed": "Ha habido un error conectándose {{provider}}",
@@ -21,9 +21,7 @@
     "metamaskNotInstalled": "Metamask not installed",
     "couldNotSwitchMetamaskNetwork": "No se ha podido cambiar la red de Metamask",
     "metamaskRequestRejected": "La petición a Metamask ha sido rechazada",
-    "insufficientCreateAccountAmount": "El valor mínimo para activar la cuenta de destino es de {{minCreateAccountAmount}}.",
-    "accountCannotReceive": "La cuenta de destino no puede recibir los fondos porque no está activa y no puede ser activada a través de este bridge.",
     "couldNotGenerateXrplFaucetWallet": "No se ha podido generar la cuenta de XRP financiada",
-    "destinationCannotPaySignatureReward": "La cuenta de destino no tiene suficientes fondos para pagar la recompensa de firma de {{signatureReward}}.",
-    "transactionSubmissionFailed": "La transacción ha fallado con el código: {{code}}"
+    "transactionSubmissionFailed": "La transacción ha fallado con el código: {{code}}",
+    "metamaskPendingRequestsResolutionRequired": "Hay peticiones pendientes en Metamask. Por favor, resuélvelas y vuelve a intentarlo."
 }

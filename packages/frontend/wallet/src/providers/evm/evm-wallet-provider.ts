@@ -1,10 +1,12 @@
 import { IEvmWalletProviderProvider } from "@frontend/blockchain/providers/evm/interfaces";
-import { IEvmWalletProviderSigner } from "@frontend/blockchain/signers/evm/ethers/web3/interfaces";
-import { ChainType, FormattedBridge, TrustCommitTransaction, Unconfirmed, CreateBridgeRequestTransaction } from "xchain-sdk";
 import { WalletProvider } from "../core/wallet-provider";
-import { ICreateBridgeRequestWalletProvider, ITrustCommitWalletProvider } from "../core/interfaces/i-wallet-provider";
+import { ITrustTransferWalletProvider } from "../core/interfaces/i-wallet-provider";
 import { WalletProviderError } from "../core/error";
 import { EvmWalletProviderErrors } from "./evm-wallet-provider.errors";
+import { Token } from "@frontend/token";
+import { ChainType } from "@shared/modules/chain";
+import { Transaction, Unconfirmed } from "@shared/modules/blockchain";
+import { IEvmWalletProviderSigner } from "@frontend/blockchain/signers/evm/interfaces";
 
 export abstract class EvmWalletProvider<
         Provider extends IEvmWalletProviderProvider = IEvmWalletProviderProvider,
@@ -12,24 +14,24 @@ export abstract class EvmWalletProvider<
         Error extends string = string,
         RequestSignerResult = any,
     >
-    extends WalletProvider<ChainType.EVM, Provider, Signer, Error, RequestSignerResult>
-    implements ITrustCommitWalletProvider, ICreateBridgeRequestWalletProvider
+    extends WalletProvider<typeof ChainType.EVM, Provider, Signer, Error, RequestSignerResult>
+    implements ITrustTransferWalletProvider
 {
     /**
      * @inheritdoc
      */
-    isTrustCommitRequired(bridge: FormattedBridge<ChainType.EVM>): boolean {
-        return !bridge.isNativeOriginIssue;
+    isTrustTransferRequired(token: Token): boolean {
+        return !token.isNative();
     }
 
     /**
      * @inheritdoc
      */
-    async trustCommit(bridge: FormattedBridge<ChainType.EVM>): Promise<Unconfirmed<TrustCommitTransaction>> {
-        if (bridge.isNativeOriginIssue) throw new WalletProviderError(EvmWalletProviderErrors.CANNOT_TRUST_COMMIT_WITH_NATIVE_TOKEN);
+    async trustTransfer(token: Token): Promise<Unconfirmed<Transaction>> {
+        if (token.isNative()) throw new WalletProviderError(EvmWalletProviderErrors.CANNOT_TRUST_TRANSFER_WITH_NATIVE_TOKEN);
 
         try {
-            return await this.signer.approveBridgeTokenContract(bridge);
+            return await this.signer.approveERC20(token.address!, this.chain.door);
         } catch (e) {
             return this.handleError(e);
         }
@@ -38,20 +40,9 @@ export abstract class EvmWalletProvider<
     /**
      * @inheritdoc
      */
-    async isCommitTrusted(bridge: FormattedBridge<ChainType.EVM>): Promise<boolean> {
-        if (bridge.isNativeOriginIssue) throw new WalletProviderError(EvmWalletProviderErrors.CANNOT_CHECK_COMMIT_TRUST_WITH_NATIVE_TOKEN);
+    async isTransferTrusted(token: Token): Promise<boolean> {
+        if (token.isNative()) throw new WalletProviderError(EvmWalletProviderErrors.CANNOT_CHECK_TRANSFER_TRUST_WITH_NATIVE_TOKEN);
 
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createBridgeRequest(
-        doorAddress: string,
-        tokenAddress: string,
-        issuingDoorAddress: string,
-    ): Promise<Unconfirmed<CreateBridgeRequestTransaction>> {
-        return await this.signer.createBridgeRequest(doorAddress, tokenAddress, issuingDoorAddress);
+        return this.provider.isERC20Approved(token.address!, this.address, this.chain.door);
     }
 }

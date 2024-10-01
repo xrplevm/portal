@@ -1,3 +1,3 @@
-import { ChainBlockchainAddressProps } from "@frontend/design-system-react/chain-blockchain-address";
+import { BlockchainAddressProps } from "@frontend/design-system-react/blockchain-address";
 
-export interface BlockchainAddressExplorerLinkProps extends ChainBlockchainAddressProps {}
+export interface BlockchainAddressExplorerLinkProps extends BlockchainAddressProps {}

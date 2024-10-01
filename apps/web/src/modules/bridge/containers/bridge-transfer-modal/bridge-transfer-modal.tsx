@@ -7,6 +7,7 @@ import { ControllerFactory } from "@frontend/core/domain/controller/factory";
 import { Tabs, TabPanel } from "@frontend/design-system-react/tabs";
 import { BridgeRoutes } from "../../bridge.router";
 import { BridgeTransferSteps } from "../bridge-transfer-steps/bridge-transfer-steps";
+import { BridgeTransferProcessing } from "../bridge-transfer-processing/bridge-transfer-processing";
 
 export const BridgeTransferModal = createModal<BridgeTransferModalProps>(function BridgeTransferModal({
     data,
@@ -23,7 +24,7 @@ export const BridgeTransferModal = createModal<BridgeTransferModalProps>(functio
         const removeOnFailed = ControllerFactory.bridgeTransferController.on("failed", () => {
             setIsError(true);
         });
-        const removeOnAttestationsStarted = ControllerFactory.bridgeTransferController.on("attestationsStarted", () => {
+        const removeOnAwaitReceiptStarted = ControllerFactory.bridgeTransferController.on("awaitReceiptStarted", () => {
             setTabIndex(1);
         });
         const removeOnCompleted = ControllerFactory.bridgeTransferController.on("completed", (result) => {
@@ -32,7 +33,7 @@ export const BridgeTransferModal = createModal<BridgeTransferModalProps>(functio
         });
         return () => {
             removeOnFailed();
-            removeOnAttestationsStarted();
+            removeOnAwaitReceiptStarted();
             removeOnCompleted();
         };
     }, []);
@@ -41,7 +42,7 @@ export const BridgeTransferModal = createModal<BridgeTransferModalProps>(functio
         <Modal
             title={tabIndex === 0 ? translate("approveTransaction") : undefined}
             closable={isError}
-            css={{ width: "35rem" }}
+            style={{ width: "35rem" }}
             onClose={onClose}
             {...modalProps}
         >
@@ -50,7 +51,7 @@ export const BridgeTransferModal = createModal<BridgeTransferModalProps>(functio
                     <BridgeTransferSteps data={data} />
                 </TabPanel>
                 <TabPanel index={1}>
-                    <></>
+                    <BridgeTransferProcessing />
                 </TabPanel>
             </Tabs>
         </Modal>

@@ -1,5 +1,5 @@
-import { AddWeb3ChainPayload } from "../web3.signer.types";
-import { IEvmWalletProviderSigner } from "./i-evm-wallet-provider.signer";
+import { IEvmWalletProviderSigner } from "../../../interfaces/i-evm-wallet-provider.signer";
+import { Chain } from "@frontend/chain";
 
 export interface IWeb3Signer extends IEvmWalletProviderSigner {
     /**
@@ -15,20 +15,14 @@ export interface IWeb3Signer extends IEvmWalletProviderSigner {
     onChainChange(handler: (chainId: string) => void): () => void;
 
     /**
-     * Returns the signer's current chain
-     * // TODO: Check if chain has to be checked or we can do it with 2 separate rpc providers
+     * Sets the chain for the web3 signer
+     * @param chain The chain to set
      */
-    getChain(): Promise<number>;
+    setChain(chain: Chain): void;
 
     /**
-     * Adds a chain to the web3 signer
-     * @param chain The chain to add
+     * Sets the chain for the web3 signer and connects to the chain
+     * @param chain The chain to set
      */
-    addChain({ chainId, ...restChain }: AddWeb3ChainPayload): Promise<void>;
-
-    /**
-     * Switches the web3 signer to the specified chain
-     * @param chainId The chainId of the chain to switch to
-     */
-    switchToChain(chainId: number): Promise<void>;
+    setChainAndConnect(chain: Chain): Promise<void>;
 }

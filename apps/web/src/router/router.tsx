@@ -24,8 +24,6 @@ export default function Router(): JSX.Element {
                 <BasePage>
                     <Routes />
                 </BasePage>
-                {/* TODO: Restore */}
-                {/* <InvalidNetworkOverlay /> */}
             </ModalProvider>
         </BrowserRouter>
     );

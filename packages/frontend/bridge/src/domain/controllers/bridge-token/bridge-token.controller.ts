@@ -9,6 +9,7 @@ import { State } from "@frontend/core/domain/state";
 import { IBridgeChainsState } from "../../states";
 import Amount from "@shared/amount";
 import { ProviderFactory } from "@frontend/blockchain/providers";
+import { BridgeTokenErrors } from "../../errors/bridge-token.errors";
 
 @Controller()
 export class BridgeTokenController implements IBridgeTokenController {
@@ -63,6 +64,16 @@ export class BridgeTokenController implements IBridgeTokenController {
      */
     setBridgeToken(token: BridgeToken | undefined): void {
         this.bridgeTokenState.setState({ bridgeToken: token });
+    }
+
+    /**
+     * Gets the bridge token.
+     * @returns The bridge token.
+     */
+    getBridgeToken(): BridgeToken {
+        const bridgeToken = this.bridgeTokenState.getState().bridgeToken;
+        if (!bridgeToken) throw new Error(BridgeTokenErrors.BRIDGE_TOKEN_NOT_SET);
+        return bridgeToken;
     }
 
     /**

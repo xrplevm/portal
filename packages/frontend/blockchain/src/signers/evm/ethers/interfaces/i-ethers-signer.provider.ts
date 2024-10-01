@@ -1,0 +1,20 @@
+import { ERC20, InterchainTokenService } from "@shared/evm/contracts";
+import { ethers } from "ethers";
+
+export interface IEthersSignerProvider {
+    /**
+     * Gets the ERC20 contract.
+     * @param address The address of the ERC20 contract.
+     * @param signerOrProvider The signer or provider.
+     * @returns The ERC20 contract.
+     */
+    getERC20Contract(address: string, signerOrProvider: ethers.Signer | ethers.providers.Provider): ERC20;
+
+    /**
+     * Gets the Interchain Token Service contract.
+     * @param address The address of the Interchain Token Service contract.
+     * @param signerOrProvider The signer or provider.
+     * @returns The Interchain Token Service contract.
+     */
+    getInterchainTokenServiceContract(address: string, signerOrProvider: ethers.Signer | ethers.providers.Provider): InterchainTokenService;
+}

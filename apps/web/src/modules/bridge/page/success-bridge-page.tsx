@@ -2,7 +2,6 @@ import { useTheme } from "@frontend/design-system-react/theme";
 import { useTranslate } from "@frontend/locale/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { BridgeSource, BridgeTransferResult } from "xchain-sdk";
 import { BridgeRoutes } from "../bridge.router";
 import Amount from "@shared/amount";
 import { Col } from "@frontend/design-system-react/col";
@@ -13,62 +12,32 @@ import { BridgeAddress } from "../containers/bridge-address/bridge-address";
 import { AmountDisplay } from "@frontend/design-system-react/amount-display";
 import { Divider } from "@frontend/design-system-react/divider";
 import { Button } from "@frontend/design-system-react/button";
+import { BridgeSource, BridgeToken, BridgeTransferResult } from "@frontend/bridge";
 
 const SuccessBridgePage = (): JSX.Element => {
     const translate = useTranslate();
     const navigate = useNavigate();
     const { state: locationState } = useLocation();
     const { spacing } = useTheme();
-    // TODO: Define
-    const destinationToken = undefined as any;
 
     if (!locationState.result) navigate(BridgeRoutes.BRIDGE, { replace: true });
 
     const transferResult = locationState.result as BridgeTransferResult;
 
-    const amount = destinationToken
-        ? Amount.fromDec(transferResult.amount, destinationToken.decimals, destinationToken.currency)
-        : undefined;
+    const token = new BridgeToken(transferResult.token);
+    const destinationToken = token.toChainToken(transferResult.destinationChain.id);
+
+    const amount = Amount.fromDec(transferResult.amount, destinationToken.decimals, destinationToken.symbol);
 
     return (
-        <Col gap={spacing[6]} css={{ padding: spacing[8] }}>
+        <Col gap={spacing[6]} style={{ padding: spacing[8] }}>
             <Typography variant="h4Bold" textAlign="center" fontWeight={700}>
                 {translate("yourTransactionHasBeenSent")}
             </Typography>
             <Col gap={spacing[8]}>
-                {transferResult.isCreateAccount && (
-                    <Label label={translate("originTransactionHash")}>
-                        <BridgeBlockchainAddress
-                            source={BridgeSource.ORIGIN}
-                            address={transferResult.createAccountCommit.hash}
-                            action="link"
-                            type="transaction"
-                            variant="body1Regular"
-                        />
-                    </Label>
-                )}
-                {!transferResult.isCreateAccount && (
-                    <>
-                        <Label label={translate("originTransactionHash")}>
-                            <BridgeBlockchainAddress
-                                source={BridgeSource.ORIGIN}
-                                address={transferResult.commit.hash}
-                                action="link"
-                                type="transaction"
-                                variant="body1Regular"
-                            />
-                        </Label>
-                        <Label label={translate("destinationTransactionHash")}>
-                            <BridgeBlockchainAddress
-                                source={BridgeSource.DESTINATION}
-                                address={transferResult.createClaim.hash}
-                                action="link"
-                                type="transaction"
-                                variant="body1Regular"
-                            />
-                        </Label>
-                    </>
-                )}
+                <Label label={translate("transferHash")}>
+                    <BridgeBlockchainAddress address={transferResult.transfer?.hash} action="link" type="transfer" variant="body1Regular" />
+                </Label>
                 <Label label={translate("fromAddress")}>
                     <BridgeAddress source={BridgeSource.ORIGIN} address={transferResult.originAddress} />
                 </Label>

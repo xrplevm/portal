@@ -18,13 +18,13 @@ export type BridgeTokenObject = TokenObject & {
 export class BridgeToken extends Token {
     id: string;
     chains: Record<string, BridgeChainTokenObject>;
-    chain: Chain;
+    nativeChain: Chain;
 
     constructor(bridgeToken: BridgeTokenObject) {
         super(bridgeToken);
         this.id = bridgeToken.id;
         this.chains = bridgeToken.chains;
-        this.chain = new Chain(bridgeToken.nativeChain);
+        this.nativeChain = new Chain(bridgeToken.nativeChain);
     }
 
     /**
@@ -36,6 +36,7 @@ export class BridgeToken extends Token {
         const chainToken = this.chains[chain];
 
         return new Token({
+            id: this.id,
             symbol: chainToken.symbol,
             decimals: chainToken.decimals ?? this.decimals,
             name: chainToken.name,

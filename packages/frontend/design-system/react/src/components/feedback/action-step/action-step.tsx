@@ -31,13 +31,13 @@ export const ActionStep = ({
         <ActionStepRoot className={clsx("action-step", status, className)} {...rest}>
             <ActionStepTitle>{title}</ActionStepTitle>
             <ActionStepSubtitleWrapper status={status} className={clsx("action-step-subtitle", status)}>
-                <ActionStepIcon status={status} css={{ fontSize: "1.5rem" }} Icon={Icon} />
+                <ActionStepIcon status={status} style={{ fontSize: "1.5rem" }} Icon={Icon} />
                 <ActionStepSubtitle>
                     {status === "error" ? error || subtitle["error"] : subtitle[status] || subtitle.default}
                 </ActionStepSubtitle>
             </ActionStepSubtitleWrapper>
             {children && (
-                <Row flex={1} css={{ marginLeft: "2rem" }}>
+                <Row flex={1} style={{ marginLeft: "2rem" }}>
                     {children}
                 </Row>
             )}

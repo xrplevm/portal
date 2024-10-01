@@ -1,6 +1,5 @@
 import { Config } from "../core/types";
 import { AppConfigDataClient, GetLatestConfigurationCommand, StartConfigurationSessionCommand } from "@aws-sdk/client-appconfigdata";
-import { IS_PROD } from "@shared/env";
 import { IConfigProvider } from "../core/manager";
 
 /**
@@ -12,11 +11,11 @@ export class AWSConfigProvider implements IConfigProvider<Config> {
     private client: AppConfigDataClient;
 
     constructor() {
+        const IS_PROD = false;
         if (IS_PROD) {
             if (!process.env.AWS_REGION) throw new Error("AWS_REGION is not defined");
             if (!process.env.AWS_ACCESS_KEY_ID) throw new Error("AWS_ACCESS_KEY_ID is not defined");
             if (!process.env.AWS_SECRET_ACCESS_KEY) throw new Error("AWS_SECRET_ACCESS_KEY is not defined");
-
             this.client = new AppConfigDataClient({
                 region: process.env.AWS_REGION,
                 credentials: {

@@ -8,8 +8,8 @@ import { BridgeWalletsController } from "../../domain/controllers/bridge-wallets
  * @param side The bridge source to get the wallet provider for.
  * @returns The wallet provider for the given bridge source.
  */
-export function getWalletSourceProvider(side: BridgeSource): IWalletProvider | undefined {
+export function getWalletSourceProvider(side: BridgeSource): IWalletProvider {
     return side === BridgeSource.ORIGIN
-        ? getInstance(BridgeWalletsController).originWalletProvider
-        : getInstance(BridgeWalletsController).destinationWalletProvider;
+        ? getInstance(BridgeWalletsController).getOriginWalletProvider()
+        : getInstance(BridgeWalletsController).getDestinationWalletProvider();
 }

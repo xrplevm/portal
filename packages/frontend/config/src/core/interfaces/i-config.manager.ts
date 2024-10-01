@@ -1,7 +1,22 @@
 import { EventEmitter } from "@frontend/events";
 import { Config } from "../types";
-import { IConfigManagerEvents } from "./i-config.manager.events";
 import { DeepPick, NestedKeys } from "@swisstype/essential";
+import { BaseConfig, BaseProviderConfig } from "../manager";
+
+export type ConfigManagerEvents<Config extends BaseConfig, ProviderConfig extends BaseProviderConfig = Omit<Config, "version">> = {
+    /**
+     * Emitted when the config is loaded.
+     * @param config The config.
+     */
+    load: (config: Config) => void;
+
+    /**
+     * Emitted when the config is outdated.
+     * @param outdatedConfig The outdated config.
+     * @param providerConfig The provider config.
+     */
+    outdated: (outdatedConfig: Config, providerConfig: ProviderConfig) => void;
+};
 
 export interface IConfigManager {
     /**
@@ -29,14 +44,14 @@ export interface IConfigManager {
      * @param event The event.
      * @param listener The listener.
      */
-    on: EventEmitter<IConfigManagerEvents>["on"];
+    on: EventEmitter<ConfigManagerEvents<Config>>["on"];
 
     /**
      * Adds an event listener that is only called once.
      * @param event The event.
      * @param listener The listener.
      */
-    once: EventEmitter<IConfigManagerEvents>["once"];
+    once: EventEmitter<ConfigManagerEvents<Config>>["once"];
 
     /**
      * Reloads the config.

@@ -8,31 +8,20 @@ import { BridgeWallet, BridgeWalletPair } from "../../../common/types/bridge-wal
 import { PersistedWallet } from "@frontend/wallet";
 import { WalletProvider, WalletProviderConnectionError, WalletProviderFactory, WalletProviderId } from "@frontend/wallet/providers";
 import { Controller } from "@frontend/core/domain/controller";
+import { DomainError } from "@frontend/core/domain/error";
+import { BridgeWalletsErrors } from "../../errors/bridge-wallets.errors";
 
 @Controller()
 export class BridgeWalletsController implements IBridgeWalletsController {
     /**
      * Reference to the origin wallet provider.
      */
-    private _originWalletProvider: WalletProvider | undefined = undefined;
-    get originWalletProvider(): WalletProvider | undefined {
-        return this._originWalletProvider;
-    }
-    private set originWalletProvider(provider: WalletProvider | undefined) {
-        this._originWalletProvider = provider;
-    }
+    private originWalletProvider: WalletProvider | undefined = undefined;
 
     /**
      * Reference to the destination wallet provider.
      */
-    private _destinationWalletProvider: WalletProvider | undefined = undefined;
-    get destinationWalletProvider(): WalletProvider | undefined {
-        return this._destinationWalletProvider;
-    }
-    private set destinationWalletProvider(provider: WalletProvider | undefined) {
-        this._destinationWalletProvider = provider;
-    }
-
+    private destinationWalletProvider: WalletProvider | undefined = undefined;
     constructor(
         private readonly bridgeChainsController: IBridgeChainsController,
         private readonly bridgeWalletsState: State<IBridgeWalletsState>,
@@ -45,12 +34,12 @@ export class BridgeWalletsController implements IBridgeWalletsController {
     async onInit(): Promise<void> {
         // Update wallet provider chains when bridge chains change
         this.bridgeChainsController.on("bridgeChainsChange", ({ originChain, destinationChain }) => {
-            if (!destinationChain || destinationChain.type !== this._destinationWalletProvider?.type)
-                this._destinationWalletProvider?.disconnect();
-            else this._destinationWalletProvider?.setChain(destinationChain);
+            if (!destinationChain || destinationChain.type !== this.destinationWalletProvider?.type)
+                this.destinationWalletProvider?.disconnect();
+            else this.destinationWalletProvider?.setChain(destinationChain);
 
-            if (!originChain || originChain.type !== this._originWalletProvider?.type) this._originWalletProvider?.disconnect();
-            else this._originWalletProvider?.setChain(originChain);
+            if (!originChain || originChain.type !== this.originWalletProvider?.type) this.originWalletProvider?.disconnect();
+            else this.originWalletProvider?.setChain(originChain);
         });
 
         // Check for persisted wallets and recover them
@@ -77,6 +66,24 @@ export class BridgeWalletsController implements IBridgeWalletsController {
 
             await Promise.all([originWalletRecoveryPromise, destinationWalletRecoveryPromise]);
         });
+    }
+
+    /**
+     * Get the origin wallet provider.
+     * @returns The origin wallet provider.
+     */
+    getOriginWalletProvider(): WalletProvider {
+        if (!this.originWalletProvider) throw new DomainError(BridgeWalletsErrors.ORIGIN_WALLET_PROVIDER_NOT_SET);
+        return this.originWalletProvider;
+    }
+
+    /**
+     * Get the destination wallet provider.
+     * @returns The destination wallet provider.
+     */
+    getDestinationWalletProvider(): WalletProvider {
+        if (!this.destinationWalletProvider) throw new DomainError(BridgeWalletsErrors.DESTINATION_WALLET_PROVIDER_NOT_SET);
+        return this.destinationWalletProvider;
     }
 
     /**
@@ -107,8 +114,8 @@ export class BridgeWalletsController implements IBridgeWalletsController {
      * @returns The wallet provider source.
      */
     private getWalletProviderSource(provider: WalletProvider): BridgeSource {
-        if (this._originWalletProvider === provider) return BridgeSource.ORIGIN;
-        else if (this._destinationWalletProvider === provider) return BridgeSource.DESTINATION;
+        if (this.originWalletProvider === provider) return BridgeSource.ORIGIN;
+        else if (this.destinationWalletProvider === provider) return BridgeSource.DESTINATION;
         else throw new Error("Wallet provider is not set");
     }
 
@@ -134,23 +141,15 @@ export class BridgeWalletsController implements IBridgeWalletsController {
             connection: "connecting",
             providerId,
             type: walletProvider.type,
-            isChainValid: true,
         });
 
-        //TODO: Delete on double metamask refactor
-        const removeOnInvalidChain = walletProvider.on("invalidChain", () => {
-            this.updateWalletState(walletProvider, { isChainValid: false });
-        });
-        const removeOnValidChain = walletProvider.on("validChain", () => {
-            this.updateWalletState(walletProvider, { isChainValid: true });
-        });
         const removeOnConnectionError = walletProvider.on("connectionError", (connectionError) => {
             this.updateWalletState(walletProvider, {
                 connection: connectionError === WalletProviderConnectionError.REJECTED ? "rejected" : "failed",
             });
         });
-        const removeOnConnect = walletProvider.on("connect", (address, isChainValid) => {
-            this.updateWalletState(walletProvider, { connection: "connected", address, isChainValid });
+        const removeOnConnect = walletProvider.on("connect", (address) => {
+            this.updateWalletState(walletProvider, { connection: "connected", address });
             // persist wallet
             this.bridgeWalletsRepository.setWalletSource(this.getWalletProviderSource(walletProvider), {
                 address,
@@ -169,8 +168,6 @@ export class BridgeWalletsController implements IBridgeWalletsController {
             this[`${walletProviderSource}WalletProvider`] = undefined;
 
             removeOnConnect();
-            removeOnInvalidChain();
-            removeOnValidChain();
             removeOnConnectionError();
             removeOnDisconnect();
         });
@@ -212,7 +209,7 @@ export class BridgeWalletsController implements IBridgeWalletsController {
      * @returns The wallet provider.
      */
     async requestOriginWalletConnection(providerId: WalletProviderId): Promise<WalletProvider> {
-        if (this._originWalletProvider) this._originWalletProvider.disconnect();
+        if (this.originWalletProvider) this.originWalletProvider.disconnect();
         return this.requestWalletConnection(BridgeSource.ORIGIN, providerId);
     }
 
@@ -222,7 +219,7 @@ export class BridgeWalletsController implements IBridgeWalletsController {
      * @returns The wallet provider.
      */
     async requestDestinationWalletConnection(providerId: WalletProviderId): Promise<WalletProvider> {
-        if (this._destinationWalletProvider) this._destinationWalletProvider.disconnect();
+        if (this.destinationWalletProvider) this.destinationWalletProvider.disconnect();
         return this.requestWalletConnection(BridgeSource.DESTINATION, providerId);
     }
 
@@ -258,10 +255,10 @@ export class BridgeWalletsController implements IBridgeWalletsController {
      * Swap the origin and destination wallets.
      */
     swap(): void {
-        const originWalletProvider = this._originWalletProvider;
-        const destinationWalletProvider = this._destinationWalletProvider;
-        this._originWalletProvider = destinationWalletProvider;
-        this._destinationWalletProvider = originWalletProvider;
+        const originWalletProvider = this.originWalletProvider;
+        const destinationWalletProvider = this.destinationWalletProvider;
+        this.originWalletProvider = destinationWalletProvider;
+        this.destinationWalletProvider = originWalletProvider;
 
         this.bridgeWalletsState.setState((prevState) => {
             // Persist swap

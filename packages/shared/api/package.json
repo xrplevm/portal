@@ -9,7 +9,8 @@
         "clean": "rimraf .turbo dist node_modules",
         "lint": "eslint .",
         "check-types": "npx tsc --noEmit",
-        "generate": "openapi -i ../../../apps/api/openapi-spec.json -o src --exportSchemas=true --exportModels=true --useUnionTypes --postfixServices=Api"
+        "generate": "openapi -i ../../../apps/api/openapi-spec.json -o src --exportSchemas=true --exportModels=true --useUnionTypes --postfixServices=Api",
+        "dist": "pnpm run build && node ../../../scripts/prebuild-exports.cjs"
     },
     "exports": {
         ".": "./src/index.ts"

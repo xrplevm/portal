@@ -1,23 +1,28 @@
-import {
-    ChainType,
-    ClaimId,
-    CommitTransaction,
-    CreateAccountCommitTransaction,
-    CreateBridgeRequestTransaction,
-    CreateClaimTransaction,
-    EthersXChainSigner,
-    FormattedBridge,
-    TrustCommitTransaction,
-    Unconfirmed,
-} from "xchain-sdk";
 import { ethers } from "ethers";
 import { Web3SignerErrors } from "./web3.signer.errors";
 import { SignerError } from "../../../core/error";
 import { SubProvider } from "../../../../providers/evm/ethers/ethers.provider.types";
-import { AddWeb3ChainPayload } from "./web3.signer.types";
+import { Web3Chain } from "./web3.signer.types";
 import { IWeb3Signer } from "./interfaces/i-web3.signer";
+import { EthersSigner } from "../ethers.signer";
+import { IEthersSignerProvider } from "../interfaces";
+import { Unconfirmed, Transaction } from "@shared/modules/blockchain";
+import { Chain } from "@frontend/chain";
+import { Token } from "@frontend/token";
 
-export class Web3Signer<Provider> extends EthersXChainSigner<any> implements IWeb3Signer {
+export class Web3Signer<Provider extends IEthersSignerProvider = IEthersSignerProvider>
+    extends EthersSigner<Provider>
+    implements IWeb3Signer
+{
+    protected _chain: Web3Chain;
+    protected get chain(): Web3Chain {
+        if (!this._chain) throw new SignerError(Web3SignerErrors.WEB3_CHAIN_NOT_SET);
+        return this._chain;
+    }
+    protected set chain(chain: Web3Chain) {
+        this._chain = chain;
+    }
+
     protected get web3Provider(): ethers.providers.Web3Provider {
         return this.signer.provider as ethers.providers.Web3Provider;
     }
@@ -45,6 +50,7 @@ export class Web3Signer<Provider> extends EthersXChainSigner<any> implements IWe
             if (typeof handler === "function") handler();
             else throw new SignerError(handler!);
         } else if (e.code === 4001 || e.code === "ACTION_REJECTED") throw new SignerError(Web3SignerErrors.WEB3_REQUEST_REJECTED);
+        else if (e.code === -32002) throw new SignerError(Web3SignerErrors.WEB3_PENDING_REQUESTS_RESOLUTION_REQUIRED);
         else if (handlers?.["default"]) {
             const handler = handlers["default"];
             if (typeof handler === "function") handler();
@@ -71,24 +77,44 @@ export class Web3Signer<Provider> extends EthersXChainSigner<any> implements IWe
     /**
      * @inheritdoc
      */
-    async getChain(): Promise<number> {
+    protected async getProviderChainId(): Promise<string> {
         const network = await this.web3Provider.getNetwork();
-        return network.chainId;
+        return "0x" + network.chainId.toString(16);
     }
 
     /**
      * @inheritdoc
      */
-    async addChain({ chainId, ...restChain }: AddWeb3ChainPayload): Promise<void> {
+    setChain(chain: Chain): void {
+        this.chain = {
+            chainId: "0x" + chain.chainId?.toString(16),
+            chainName: chain.name,
+            rpcUrls: [chain.urls.rpc!],
+            blockExplorerUrls: [chain.explorer.url],
+            nativeCurrency: {
+                symbol: chain.nativeToken.symbol,
+                decimals: chain.nativeToken.decimals,
+            },
+        };
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async setChainAndConnect(chain: Chain): Promise<void> {
+        this.setChain(chain);
+        await this.handleProviderChainConnection();
+    }
+
+    /**
+     * Adds the chain to the provider.
+     * @returns A promise that resolves when the chain is added.
+     */
+    async addChain(): Promise<void> {
         try {
             return await this.web3SubProvider.request({
                 method: "wallet_addEthereumChain",
-                params: [
-                    {
-                        chainId: "0x" + chainId.toString(16),
-                        ...restChain,
-                    },
-                ],
+                params: [this.chain],
             });
         } catch (e) {
             return this.handleError(e);
@@ -96,25 +122,39 @@ export class Web3Signer<Provider> extends EthersXChainSigner<any> implements IWe
     }
 
     /**
-     * @inheritdoc
+     * Switches to the chain. If the chain is not found, it adds it.
+     * @returns A promise that resolves when the chain is switched.
      */
-    async switchToChain(chainId: number): Promise<void> {
+    async switchToChain(): Promise<void> {
         try {
             await this.web3SubProvider.request({
                 method: "wallet_switchEthereumChain",
-                params: [{ chainId: "0x" + chainId.toString(16) }],
+                params: [{ chainId: this.chain.chainId }],
             });
-        } catch (e) {
-            return this.handleError(e, { 4902: Web3SignerErrors.WEB3_CHAIN_NOT_FOUND });
+        } catch (e: any) {
+            // If the chain is not found, add it.
+            if (e.code === 4902) await this.addChain();
+            return this.handleError(e);
         }
+    }
+
+    /**
+     * Handles the provider chain connection.
+     * If the provider chain is not the same as the chain, it switches to the chain or adds it.
+     */
+    async handleProviderChainConnection(): Promise<void> {
+        const providerChainId = await this.getProviderChainId();
+
+        if (providerChainId !== this.chain.chainId) await this.switchToChain();
     }
 
     /**
      * @inheritdoc
      */
-    async approveBridgeTokenContract(bridge: FormattedBridge<ChainType.EVM>): Promise<Unconfirmed<TrustCommitTransaction>> {
+    async approveERC20(address: string, spender: string): Promise<Unconfirmed<Transaction>> {
         try {
-            return await super.approveBridgeTokenContract(bridge);
+            await this.handleProviderChainConnection();
+            return await super.approveERC20(address, spender);
         } catch (e) {
             return this.handleError(e);
         }
@@ -123,55 +163,16 @@ export class Web3Signer<Provider> extends EthersXChainSigner<any> implements IWe
     /**
      * @inheritdoc
      */
-    async createClaim(originAddress: string, bridge: FormattedBridge<ChainType.EVM>): Promise<Unconfirmed<CreateClaimTransaction>> {
-        try {
-            return await super.createClaim(originAddress, bridge);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async commit(
-        claimId: ClaimId,
-        destinationAddress: string,
-        bridge: FormattedBridge<ChainType.EVM>,
+    async transfer(
         amount: string,
-    ): Promise<Unconfirmed<CommitTransaction>> {
-        try {
-            return await super.commit(claimId, destinationAddress, bridge, amount);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createAccountCommit(
-        destinationAddress: string,
-        bridge: FormattedBridge<ChainType.EVM>,
-        amount: string,
-    ): Promise<Unconfirmed<CreateAccountCommitTransaction>> {
-        try {
-            return await super.createAccountCommit(destinationAddress, bridge, amount);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createBridgeRequest(
+        token: Token,
         doorAddress: string,
-        token: string,
-        issuingDoorAddress: string,
-    ): Promise<Unconfirmed<CreateBridgeRequestTransaction>> {
+        destinationChain: Chain,
+        destinationAddress: string,
+    ): Promise<Unconfirmed<Transaction>> {
         try {
-            return await super.createBridgeRequest(doorAddress, token, issuingDoorAddress);
+            await this.handleProviderChainConnection();
+            return await super.transfer(amount, token, doorAddress, destinationChain, destinationAddress);
         } catch (e) {
             return this.handleError(e);
         }

@@ -20,7 +20,7 @@ describe("EthersProvider", () => {
 
     describe("getTokenContract", () => {
         it("should return a new ERC20 contract", () => {
-            const tokenContract = ethersProvider["getTokenContract"]("0x123");
+            const tokenContract = ethersProvider["getERC20Contract"]("0x123");
 
             expect(tokenContract).toBeInstanceOf(ERC20);
         });
@@ -75,7 +75,7 @@ describe("EthersProvider", () => {
     describe("getERC20Balance", () => {
         it("should return the ERC20 balance of the given address", async () => {
             const mockBalance = BigNumber.from(1);
-            jest.spyOn(ethersProvider as any, "getTokenContract").mockReturnValueOnce(
+            jest.spyOn(ethersProvider as any, "getERC20Contract").mockReturnValueOnce(
                 new ERC20Mock({
                     balanceOf: new MethodMock("mockResolvedValue", mockBalance),
                 }),

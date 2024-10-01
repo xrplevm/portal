@@ -1,4 +1,5 @@
 export type TokenObject = {
+    id?: string;
     symbol: string;
     decimals: number;
     name: string;
@@ -7,6 +8,7 @@ export type TokenObject = {
 };
 
 export class Token {
+    id?: string;
     symbol: string;
     decimals: number;
     name: string;
@@ -14,6 +16,7 @@ export class Token {
     address?: string;
 
     constructor(token: TokenObject) {
+        this.id = token.id;
         this.symbol = token.symbol;
         this.decimals = token.decimals;
         this.name = token.name;

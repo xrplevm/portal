@@ -11,7 +11,8 @@
         "lint": "eslint .",
         "check-types": "npx tsc --noEmit",
         "generate:icons": "node scripts/icon-generator.js src/assets/icons/ src/components/icons/",
-        "generate:images": "node scripts/images-generator.js src/assets/images/"
+        "generate:images": "node scripts/images-generator.js src/assets/images/",
+        "dist": "pnpm run build && node ../../../../scripts/prebuild-exports.cjs"
     },
     "exports": {
         ".": "./src/core/index.ts",
@@ -24,12 +25,12 @@
         "./styles/global-styles": "./src/styles/global-styles.ts",
         "./amount-field": "./src/components/input/amount-field/index.ts",
         "./amount-display": "./src/components/display/amount-display/index.ts",
+        "./axelar-logo": "./src/components/display/axelar-logo/index.ts",
         "./badge": "./src/components/display/badge/index.ts",
         "./blockchain-address": "./src/components/display/blockchain-address/index.ts",
         "./chain": "./src/components/display/chain/index.ts",
         "./chain-address": "./src/components/display/chain-address/index.ts",
         "./chain-avatar": "./src/components/display/chain-avatar/index.ts",
-        "./chain-blockchain-address": "./src/components/display/chain-blockchain-address/index.ts",
         "./chain-sequence": "./src/components/display/chain-sequence/index.ts",
         "./chip": "./src/components/display/chip/index.ts",
         "./date-display": "./src/components/display/date-display/index.ts",

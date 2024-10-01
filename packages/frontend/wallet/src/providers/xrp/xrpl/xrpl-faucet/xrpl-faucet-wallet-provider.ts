@@ -1,12 +1,12 @@
 import { IXrplFaucetProvider } from "@frontend/blockchain/providers/xrp/xrpl/xrpl-faucet/interfaces";
 import { XrpWalletProvider } from "../../xrp-wallet-provider";
-import { IXrplSigner } from "@frontend/blockchain/signers/xrp/interfaces";
 import { XrplFaucetWalletProviderErrors } from "./xrpl-faucet-wallet-provider.errors";
-import { ChainType } from "xchain-sdk";
 import { IXrplFaucetSeedsRepository } from "./interfaces/i-xrpl-faucet-seeds.repository";
 import { XrplSigner } from "@frontend/blockchain/signers/xrp/xrpl";
 import { XrplFaucetProvider } from "@frontend/blockchain/providers/xrp/xrpl/xrpl-faucet";
 import { Client, Wallet } from "xrpl";
+import { ChainType } from "@shared/modules/chain";
+import { IXrplSigner } from "@frontend/blockchain/signers/xrp/xrpl/interfaces";
 
 export class XrplFaucetWalletProvider extends XrpWalletProvider<IXrplFaucetProvider, IXrplSigner, XrplFaucetWalletProviderErrors, void> {
     constructor(private readonly xrplFaucetSeedsRepository: IXrplFaucetSeedsRepository) {

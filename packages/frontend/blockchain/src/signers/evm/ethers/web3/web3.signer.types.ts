@@ -1,5 +1,5 @@
-export type AddWeb3ChainPayload = {
-    chainId: number;
+export type Web3Chain = {
+    chainId: string;
     chainName: string;
     rpcUrls: string[];
     blockExplorerUrls: string[];

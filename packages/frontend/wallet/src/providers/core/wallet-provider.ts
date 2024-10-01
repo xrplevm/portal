@@ -1,15 +1,6 @@
 import { IWalletProviderProvider } from "@frontend/blockchain/providers/interfaces";
 import { IWalletProviderSigner } from "@frontend/blockchain/signers/interfaces";
-import {
-    ChainType,
-    CreateClaimTransaction,
-    CommitTransaction,
-    CreateAccountCommitTransaction,
-    Unconfirmed,
-    FormattedBridge,
-    ClaimId,
-} from "xchain-sdk";
-import { IMultipleChainWalletProvider, IWalletProvider, WalletProviderEvents } from "./interfaces/i-wallet-provider";
+import { IWalletProvider, WalletProviderEvents } from "./interfaces/i-wallet-provider";
 import { WalletProviderEventEmitter } from "./wallet-provider.events";
 import { WalletProviderConnectionError, WalletProviderId } from "../types";
 import { WalletProviderErrors } from "./wallet-provider.errors";
@@ -17,11 +8,14 @@ import { WalletProviderError } from "./error";
 import { isProviderError } from "@frontend/blockchain/providers/error";
 import { isSignerError } from "@frontend/blockchain/signers/error";
 import { Chain } from "@frontend/chain";
+import { ChainType } from "@shared/modules/chain";
+import { Token } from "@frontend/token";
+import { Transaction, Unconfirmed } from "@shared/modules/blockchain";
 
 export abstract class WalletProvider<
     Type extends ChainType = ChainType,
     Provider extends IWalletProviderProvider = IWalletProviderProvider,
-    Signer extends IWalletProviderSigner<Type> = IWalletProviderSigner<Type>,
+    Signer extends IWalletProviderSigner = IWalletProviderSigner,
     Error extends string = string,
     RequestSignerResult = any,
 > implements IWalletProvider
@@ -267,12 +261,11 @@ export abstract class WalletProvider<
     /**
      * Connect the wallet and emits the `connect` event.
      * @param address Connected address.
-     * @param isChainValid If the chain is valid.
      */
-    connect(address: string, isChainValid = true): void {
+    connect(address: string): void {
         this.address = address;
 
-        this.eventEmitter.emit("connect", address, isChainValid);
+        this.eventEmitter.emit("connect", address);
     }
 
     /**
@@ -287,8 +280,7 @@ export abstract class WalletProvider<
     }
 
     /**
-     * Gets the wallet address.
-     * @returns The wallet address.
+     * @inheritdoc
      */
     getAddress(): Promise<string> {
         return Promise.resolve(this.address);
@@ -311,19 +303,14 @@ export abstract class WalletProvider<
     }
 
     /**
-     * Handles invalid chains and emits the `invalidChain` event.
-     * TODO: Delete on double metamask refactor
+     * @inheritdoc
      */
-    protected handleInvalidChain(): void {
-        this.eventEmitter.emit("invalidChain");
-    }
-
-    /**
-     * Handles valid chain and emits the `validChain` event.
-     * TODO: Delete on double metamask refactor
-     */
-    protected handleValidChain(): void {
-        this.eventEmitter.emit("validChain");
+    async transfer(amount: string, token: Token, destinationChain: Chain, destinationAddress: string): Promise<Unconfirmed<Transaction>> {
+        try {
+            return await this.signer.transfer(amount, token, this.chain.door, destinationChain, destinationAddress);
+        } catch (e) {
+            return this.handleError(e);
+        }
     }
 
     /**
@@ -331,68 +318,5 @@ export abstract class WalletProvider<
      */
     on<Event extends keyof WalletProviderEvents>(event: Event, listener: WalletProviderEvents[Event]): () => void {
         return this.eventEmitter.on(event, listener);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createClaim(originAddress: string, bridge: FormattedBridge<Type>): Promise<Unconfirmed<CreateClaimTransaction>> {
-        try {
-            return await this.signer.createClaim(originAddress, bridge);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async commit(
-        claimId: ClaimId,
-        destinationAddress: string,
-        bridge: FormattedBridge<Type>,
-        amount: string,
-    ): Promise<Unconfirmed<CommitTransaction>> {
-        try {
-            return await this.signer.commit(claimId, destinationAddress, bridge, amount);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    async createAccountCommit(
-        destinationAddress: string,
-        bridge: FormattedBridge<Type>,
-        amount: string,
-    ): Promise<Unconfirmed<CreateAccountCommitTransaction>> {
-        try {
-            return await this.signer.createAccountCommit(destinationAddress, bridge, amount);
-        } catch (e) {
-            return this.handleError(e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    isClaimAttested(): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    isCreateAccountCommitAttested(): Promise<boolean> {
-        return Promise.resolve(true);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    isMultipleChain(): this is IMultipleChainWalletProvider {
-        return "addChain" in this && "switchToChain" in this;
     }
 }

@@ -23,7 +23,7 @@ export const Modal = ({
 
     return (
         <ModalRoot open={open} elevation={elevation} onClose={handleClose} closable={closable} {...rest}>
-            <Col css={{ height: "100%" }} gap="2rem" className="ModalContainer">
+            <Col style={{ height: "100%" }} gap="2rem" className="ModalContainer">
                 {title && (
                     <ModalHeader>
                         <Typography variant="h4Bold" fontWeight={700}>

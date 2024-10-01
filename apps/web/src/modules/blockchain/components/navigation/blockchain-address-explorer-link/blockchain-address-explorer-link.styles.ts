@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import { ChainBlockchainAddress } from "@frontend/design-system-react/chain-blockchain-address";
+import { BlockchainAddress } from "@frontend/design-system-react/blockchain-address";
 
-export const ExplorerBlockchainAddress = styled(ChainBlockchainAddress)(() => ({
+export const ExplorerBlockchainAddress = styled(BlockchainAddress)(() => ({
     ".Hash": {
         width: "fit-content",
     },

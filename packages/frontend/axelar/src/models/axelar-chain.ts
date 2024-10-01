@@ -51,11 +51,12 @@ export class AxelarChain {
      * @returns The chain type.
      */
     private getChainType(): ChainType {
-        if (this.chain_type === "evm") {
-            return ChainType.EVM;
-        } else if (this.id.includes("xrpl")) {
+        if (this.id === "xrpl") {
             return ChainType.XRP;
+        } else if (this.chain_type === "evm" || this.chain_type === "vm") {
+            return ChainType.EVM;
         }
+
         throw new Error(`Unsupported chain type: ${this.chain_type}`);
     }
 

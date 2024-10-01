@@ -26,7 +26,7 @@ export function TokenSelectorListItem<T>({
             </Row>
             <Row alignItems="center" gap={spacing[3]}>
                 {balance && (
-                    <Skeleton loading={isBalanceLoading} css={{ width: "3rem" }}>
+                    <Skeleton loading={isBalanceLoading} style={{ width: "3rem" }}>
                         <AmountDisplay amount={balance} hideCurrency />
                     </Skeleton>
                 )}

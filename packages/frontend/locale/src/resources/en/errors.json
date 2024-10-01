@@ -13,7 +13,7 @@
     "invalid_number_lt": "The number must be lower than {{n}}",
     "invalid_number_lte": "The number must be lower or equal than {{n}}",
     "insufficientBalance": "You don't have enough balance",
-    "attestationsError": "There was an error while checking attestations",
+    "awaitReceiptError": "There was an error while await the receipt of the transaction",
     "errorReceivingFaucetTokens": "There was an error when receiving tokens from the faucet",
     "walletConnectionRejected": "{{provider}} connection was rejected",
     "walletConnectionFailed": "There was an error connecting to {{provider}}",
@@ -21,9 +21,7 @@
     "metamaskNotInstalled": "Metamask not installed",
     "couldNotSwitchMetamaskNetwork": "Could not switch the Metamask network",
     "metamaskRequestRejected": "Metamask request was rejected",
-    "insufficientCreateAccountAmount": "The minimum amount to activate the destination account is {{minCreateAccountAmount}}.",
-    "accountCannotReceive": "The destination account cannot receive the funds because it is not active and cannot be activated through this bridge.",
     "couldNotGenerateXrplFaucetWallet": "Could not generate XRP faucet wallet",
-    "destinationCannotPaySignatureReward": "The destination account does not have enough funds to pay the signature reward of {{signatureReward}}.",
-    "transactionSubmissionFailed": "Transaction submission failed with code: {{code}}"
+    "transactionSubmissionFailed": "Transaction submission failed with code: {{code}}",
+    "metamaskPendingRequestsResolutionRequired": "There are pending requests in Metamask. Please resolve them and try again."
 }

@@ -19,9 +19,12 @@ import {
 } from "@frontend/bridge/domain/controllers";
 import { IChainController } from "@frontend/chain/ui/interfaces";
 import { ChainController } from "@frontend/chain/domain/controllers";
+import { IActivityController } from "@frontend/activity/ui/interfaces";
+import { ActivityController } from "@frontend/activity/domain/controllers";
 
 declare module "@frontend/core/domain/controller/factory" {
     export interface IControllerFactory {
+        activityController: IActivityController;
         settingsController: ISettingsController;
         bridgeChainsController: IBridgeChainsController;
         bridgeTokenController: IBridgeTokenController;
@@ -32,6 +35,7 @@ declare module "@frontend/core/domain/controller/factory" {
 }
 
 ControllerFactory.create({
+    activityController: () => new ActivityController(ServiceFactory.axelarService),
     settingsController: () =>
         new SettingsController(RepositoryFactory.settingsRepository, ServiceFactory.localizationService, StateManager.states.settings),
     chainController: () => new ChainController(ServiceFactory.axelarService),

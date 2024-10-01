@@ -1,6 +1,5 @@
 import { Outlet, RouteObject } from "react-router-dom";
 import { lazy } from "react";
-import { MainPage } from "../common/containers/main-page/main-page";
 
 const BridgePage = lazy(() => import("./page/bridge-page"));
 const SuccessBridgePage = lazy(() => import("./page/success-bridge-page"));
@@ -18,11 +17,7 @@ export const useBridgeRoutes = (): RouteObject[] => {
     return [
         {
             path: BridgeRoutes.BRIDGE,
-            element: (
-                <MainPage>
-                    <Outlet />
-                </MainPage>
-            ),
+            element: <Outlet />,
             children: [
                 {
                     path: BridgeRoutes.BRIDGE,

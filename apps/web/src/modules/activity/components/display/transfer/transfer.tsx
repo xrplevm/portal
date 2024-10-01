@@ -13,12 +13,12 @@ import { useTheme } from "@frontend/design-system-react/theme";
 import { DateFormat } from "@frontend/misc/ui/date";
 import { Expandable } from "@frontend/design-system-react/expandable";
 
-// TODO: https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4
+// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
     const translate = useTranslate();
     const { spacing } = useTheme();
 
-    // TODO: https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4
+    // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
     const amount = new Amount(transfer.value, 0, "");
 
     return (

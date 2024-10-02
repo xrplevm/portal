@@ -28,6 +28,7 @@ export interface CoreConfig extends BaseConfig {
     axelar: {
         url: string;
         apiUrl: string;
+        gmpUrl: string;
         interchainTokenServiceContract: string;
         chainIds: Record<string, boolean>;
         // Map of chainId to axelar chain object.

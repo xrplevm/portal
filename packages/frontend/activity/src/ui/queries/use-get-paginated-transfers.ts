@@ -1,9 +1,10 @@
-import { useInfiniteQuery, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { getInstance } from "@frontend/core/common/utils/singleton";
 import { ActivityController } from "../../domain/controllers";
 import { useBridgeChainsState, useBridgeWalletsState } from "@frontend/bridge/ui/state";
+import { PaginatedTransfers } from "../../common";
+import { useInfiniteApiQuery } from "@frontend/query/react";
+import { UseInfiniteQueryResult } from "@tanstack/react-query";
 
-// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 export interface UseGetPaginatedTransfersProps {
     page: number;
     pageSize: number;
@@ -11,10 +12,21 @@ export interface UseGetPaginatedTransfersProps {
 
 /**
  * Get the query key for the paginated transfers query.
+ * @param page The page number.
+ * @param pageSize The page size.
+ * @param sourceChain The source chain.
+ * @param destinationChain The destination chain.
+ * @param originWalletAddress The origin wallet address.
  * @returns The query key.
  */
-export function getPaginatedTransfersQueryKey(): any {
-    return ["paginated-transfers"];
+export function getPaginatedTransfersQueryKey(
+    page: number,
+    pageSize: number,
+    sourceChain?: string,
+    destinationChain?: string,
+    originWalletAddress?: string,
+): any {
+    return ["paginated-transfers", page, pageSize, sourceChain, destinationChain, originWalletAddress];
 }
 
 /**
@@ -40,22 +52,29 @@ export function usePaginatedTransfersEnabled(enabled = true): boolean {
  * @param _ The options for the query.
  * @returns The paginated transfers.
  */
-export function useGetPaginatedTransfers(_: UseGetPaginatedTransfersProps = { page: 1, pageSize: 10 }): UseInfiniteQueryResult<any, Error> {
-    // const _bridgeChainsState = useBridgeChainsState();
-    // const _bridgeWalletsState = useBridgeWalletsState();
+export function useGetPaginatedTransfers(
+    { page, pageSize }: UseGetPaginatedTransfersProps = { page: 1, pageSize: 25 },
+): UseInfiniteQueryResult<PaginatedTransfers, Error> {
+    const { originChain, destinationChain } = useBridgeChainsState();
+    const { originWallet } = useBridgeWalletsState();
 
-    // const queryEnabled = usePaginatedTransfersEnabled();
-    const queryKey = getPaginatedTransfersQueryKey();
+    const originWalletAddress = originWallet.connection === "connected" ? originWallet.address : undefined;
 
-    // TODO: Define getPaginatedTransfers params
-    return useInfiniteQuery({
+    const queryEnabled = usePaginatedTransfersEnabled();
+    const queryKey = getPaginatedTransfersQueryKey(page, pageSize, originChain?.id, destinationChain?.id, originWalletAddress);
+
+    return useInfiniteApiQuery({
         queryKey,
-        queryFn: () => getInstance(ActivityController).getPaginatedTransfers(),
-        // enabled: queryEnabled,
-        enabled: false,
+        queryFn: ({ pageParam = 1 }) =>
+            getInstance(ActivityController).getPaginatedTransfers(
+                pageParam,
+                pageSize,
+                originChain?.id,
+                destinationChain?.id,
+                originWalletAddress,
+            ),
+        enabled: queryEnabled,
         staleTime: 3000,
-        // TODO: Set pagination (https://www.notion.so/Axelar-Transfer-tokens-from-XRPL-b5610ee16a82430eba9bbd7789c74642?pvs=4)
-        getNextPageParam: (lastPage) => lastPage.page + 1,
         initialPageParam: 1,
     });
 }

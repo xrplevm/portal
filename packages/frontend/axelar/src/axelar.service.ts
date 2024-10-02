@@ -12,6 +12,9 @@ import { BridgeToken } from "@frontend/bridge";
 import { GetITSAssetsResponse } from "./responses/get-it-assets.response";
 import { AxelarInterchainToken } from "./models/axelar-interchain-token";
 import { AxelarInterchainTokenObject } from "./types/axelar-interchain-token.types";
+import { AxelarGMPTransferContractMethod, AxelarGMPTransfersObject } from "./types/axelar-gmp.types";
+import { PaginatedAxelarTransfers } from "./models/axelar-paginated-transfers";
+import { PaginatedTransfers } from "@frontend/activity";
 
 @Service()
 export class AxelarService implements IAxelarService {
@@ -23,6 +26,10 @@ export class AxelarService implements IAxelarService {
 
     private get apiUrl(): string {
         return this.configManager.get("axelar.apiUrl");
+    }
+
+    private get gmpUrl(): string {
+        return this.configManager.get("axelar.gmpUrl");
     }
 
     /**
@@ -130,7 +137,40 @@ export class AxelarService implements IAxelarService {
 
     /**
      * Get paginated transfers.
+     * @param page The page number.
+     * @param pageSize The page size.
+     * @param sourceChain The source chain.
+     * @param destinationChain The destination chain.
+     * @param sender The sender.
      * @returns The paginated transfers.
      */
-    async getPaginatedTransfers(): Promise<any> {}
+    async getPaginatedTransfers(
+        page: number,
+        pageSize: number,
+        sourceChain?: string,
+        destinationChain?: string,
+        sender?: string,
+    ): Promise<PaginatedTransfers> {
+        const response = await fetch(`${this.gmpUrl}/searchGMP`, {
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+            body: JSON.stringify({
+                size: pageSize,
+                from: (page - 1) * pageSize,
+                sourceChain,
+                destinationChain,
+                contractMethod: AxelarGMPTransferContractMethod.INTERCHAIN_TRANSFER,
+                senderAddress: sender,
+            }),
+        });
+        if (!response.ok) throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_FETCH_ERROR);
+
+        try {
+            const data = (await response.json()) as AxelarGMPTransfersObject;
+
+            return new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
+        } catch (_) {
+            throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_PARSE_ERROR);
+        }
+    }
 }

@@ -44,6 +44,7 @@ export const config: CoreConfig = {
     axelar: {
         url: "https://devnet-amplifier.axelarscan.io", //"https://axelarscan.io"
         apiUrl: "https://devnet-amplifier.api.axelarscan.io/api", //"https://api.axelarscan.io/api",
+        gmpUrl: "https://devnet-amplifier.api.axelarscan.io/gmp", //"https://api.axelarscan.io/gmp",
         interchainTokenServiceContract: "0x144c3d7A5f5198EF3B46A8258b35E903cf197A66",
         chainIds: {
             // xrpl: true,

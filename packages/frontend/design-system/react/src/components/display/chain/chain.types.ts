@@ -1,5 +1,5 @@
-import { ChainDto } from "@shared/api";
+import { Chain } from "@frontend/chain";
 
 export interface ChainProps {
-    chain: ChainDto;
+    chain: Chain;
 }

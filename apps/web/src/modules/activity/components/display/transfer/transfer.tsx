@@ -19,18 +19,15 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
     const { spacing } = useTheme();
 
     // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
-    const amount = new Amount(transfer.value, 0, "");
+    const amount = new Amount(transfer.amount, 0, "6");
 
     return (
         <Expandable className="Transfer">
             <Expandable.Display>
                 <Row flex={1} alignItems="center" justifyContent="space-between">
-                    <ChainSequence origin={transfer.sourceChain} destination={transfer.destinationChain} />
+                    <ChainSequence origin={transfer.sourceChain!} destination={transfer.destinationChain!} />
                     <Row alignItems="center" gap={spacing[4]}>
-                        <TransferToken
-                            tokenImageUrl={transfer.lockingChainToken.imageUrl}
-                            nativeChainImageUrl={transfer.lockingChain.imageUrl}
-                        />
+                        <TransferToken tokenImageUrl={transfer.sourceChain?.image} nativeChainImageUrl={transfer.destinationChain?.image} />
                         <Col justifyContent="center" alignItems="start">
                             <Row gap={spacing[2]}>
                                 <Typography variant="body1" textAlign="right" fontWeight={700}>
@@ -47,7 +44,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                     <Col gap={spacing[4]}>
                         <TransferField label={translate("from")}>
                             <BlockchainAddressExplorerLink
-                                chain={transfer.sourceChain}
+                                chain={transfer.sourceChain!}
                                 address={transfer.from}
                                 variant="body1"
                                 type="account"
@@ -58,7 +55,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                                 variant="body1"
                                 type="account"
                                 address={transfer.to}
-                                chain={transfer.destinationChain}
+                                chain={transfer.destinationChain!}
                             />
                         </TransferField>
                     </Col>

@@ -2,8 +2,8 @@ import { TransferListNothingToShow } from "../transfer-list-nothing-to-show/tran
 import { TransferInfiniteList, TransferListRoot } from "./transfer-list.styles";
 import { useRef } from "react";
 import { setRef } from "@peersyst/react-utils";
-import { Transfer } from "../../components/display/transfer/transfer";
 import { useGetPaginatedTransfers, usePaginatedTransfersEnabled } from "@frontend/activity/ui/queries";
+import { Transfer } from "../../components/display/transfer/transfer";
 
 export const TransferList = (): JSX.Element => {
     const paginatedTransfersEnabled = usePaginatedTransfersEnabled();
@@ -18,14 +18,17 @@ export const TransferList = (): JSX.Element => {
     };
 
     return (
+        // @ts-ignore
         <TransferListRoot ref={(r) => setRef(rootRef, r)} isEmpty={data?.pages[0].items.length === 0 && !loading}>
             <TransferInfiniteList
                 container={rootRef as any} // Ref types conflict
+                // @ts-ignore
                 data={data}
                 isLoading={loading}
                 end={!hasNextPage}
                 onEndReached={handleEndReached}
-                renderItem={(transfer) => <Transfer transfer={transfer} />}
+                renderItem={(transfer: any) => <Transfer transfer={transfer} />}
+                // renderItem={(transfer: any) => <Typography variant="body1">{JSON.stringify(transfer, null, 2)}</Typography>}
                 nothingToShow={<TransferListNothingToShow />}
                 observerOffset="5rem"
             />

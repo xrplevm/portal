@@ -7,6 +7,8 @@ export type TransferObject = {
     from: string;
     to: string;
     amount: string;
+    symbol: string;
+    decimals: number;
     createdAt: number;
 };
 
@@ -17,6 +19,8 @@ export class Transfer {
     from: string;
     to: string;
     amount: string;
+    symbol: string;
+    decimals: number;
     createdAt: number;
     sourceChain?: Chain;
     destinationChain?: Chain;
@@ -28,6 +32,8 @@ export class Transfer {
         this.from = transferObject.from;
         this.to = transferObject.to;
         this.amount = transferObject.amount;
+        this.symbol = transferObject.symbol;
+        this.decimals = transferObject.decimals;
         this.createdAt = transferObject.createdAt;
     }
 }

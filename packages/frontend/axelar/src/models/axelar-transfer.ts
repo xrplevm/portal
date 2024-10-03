@@ -71,8 +71,10 @@ export class AxelarTransfer {
             destinationChainId: this.call.returnValues.destinationChain || "",
             from: this.call.returnValues.sourceAddress || "",
             to: this.call.returnValues.destinationAddress || "",
-            // TODO: Add amount
-            amount: "0",
+            // TODO: Add amount when axelar api returns it
+            amount: "100000",
+            symbol: "EUR",
+            decimals: 6,
             createdAt: this.call.block_timestamp,
         });
     }

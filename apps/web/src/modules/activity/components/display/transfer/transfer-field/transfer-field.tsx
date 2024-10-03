@@ -4,7 +4,7 @@ import { TransferFieldProps } from "./transfer-field.types";
 
 export const TransferField = ({ children, label, ...props }: TransferFieldProps): JSX.Element => {
     return (
-        <Label variant="caption2" label={label} gap={0} {...props}>
+        <Label variant="caption2Regular" label={label} gap={0} {...props}>
             <Row flex={1} css={{ width: "100%" }} alignItems="center" justifyContent="space-between">
                 {children}
             </Row>

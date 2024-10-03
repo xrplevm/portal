@@ -13,13 +13,11 @@ import { useTheme } from "@frontend/design-system-react/theme";
 import { DateFormat } from "@frontend/misc/ui/date";
 import { Expandable } from "@frontend/design-system-react/expandable";
 
-// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
     const translate = useTranslate();
     const { spacing } = useTheme();
 
-    // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
-    const amount = new Amount(transfer.amount, 0, "6");
+    const amount = new Amount(transfer.amount, transfer.decimals, transfer.symbol);
 
     return (
         <Expandable className="Transfer">
@@ -30,11 +28,11 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                         <TransferToken tokenImageUrl={transfer.sourceChain?.image} nativeChainImageUrl={transfer.destinationChain?.image} />
                         <Col justifyContent="center" alignItems="start">
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1" textAlign="right" fontWeight={700}>
+                                <Typography variant="body1Regular" textAlign="right" fontWeight={700}>
                                     {amount.formatAmount()} {amount.currency}
                                 </Typography>
                             </Row>
-                            <DateDisplay variant="caption2" color="grey.400" textAlign="right" date={transfer.createdAt} />
+                            <DateDisplay variant="caption2Regular" color="grey.400" textAlign="right" date={transfer.createdAt} />
                         </Col>
                     </Row>
                 </Row>
@@ -46,13 +44,13 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                             <BlockchainAddressExplorerLink
                                 chain={transfer.sourceChain!}
                                 address={transfer.from}
-                                variant="body1"
+                                variant="body1Regular"
                                 type="account"
                             />
                         </TransferField>
                         <TransferField label={translate("to")}>
                             <BlockchainAddressExplorerLink
-                                variant="body1"
+                                variant="body1Regular"
                                 type="account"
                                 address={transfer.to}
                                 chain={transfer.destinationChain!}
@@ -64,21 +62,21 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                     <Row alignItems="flex-start" justifyContent="space-between">
                         <TransferField label={translate("amount")}>
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1">
+                                <Typography variant="body1Regular">
                                     {amount.formatAmount()} {amount.currency}
                                 </Typography>
                             </Row>
                         </TransferField>
                         <TransferField label={translate("received")}>
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1">
+                                <Typography variant="body1Regular">
                                     {amount.formatAmount()} {amount.currency}
                                 </Typography>
                             </Row>
                         </TransferField>
                         <TransferField label={translate("date")} css={{ width: "fit-content" }}>
                             <Row gap={spacing[2]}>
-                                <DateDisplay format={DateFormat.DATE_TIME} variant="body1" date={transfer.createdAt} />
+                                <DateDisplay format={DateFormat.DATE_TIME} variant="body1Regular" date={transfer.createdAt} />
                             </Row>
                         </TransferField>
                     </Row>

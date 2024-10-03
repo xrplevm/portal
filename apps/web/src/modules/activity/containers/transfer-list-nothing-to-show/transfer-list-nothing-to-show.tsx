@@ -11,12 +11,12 @@ export const TransferListNothingToShow = (): JSX.Element => {
     return (
         <Col flex={1} justifyContent="center" alignItems="center">
             {originWallet.connection === "connected" && destinationWallet.connection === "connected" ? (
-                <Typography variant="h6" fontWeight={400} color="grey.500" textAlign="center">
+                <Typography variant="h6Bold" fontWeight={400} color="grey.500" textAlign="center">
                     {translate("hereYouWillSeeYourTransfers")}
                 </Typography>
             ) : (
                 <Link to={BridgeRoutes.BRIDGE}>
-                    <Typography variant="h6">{translate("connectYourWallets")}</Typography>
+                    <Typography variant="h6Bold">{translate("connectYourWallets")}</Typography>
                 </Link>
             )}
         </Col>

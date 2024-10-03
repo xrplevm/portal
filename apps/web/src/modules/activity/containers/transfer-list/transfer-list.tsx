@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { setRef } from "@peersyst/react-utils";
 import { useGetPaginatedTransfers, usePaginatedTransfersEnabled } from "@frontend/activity/ui/queries";
 import { Transfer } from "../../components/display/transfer/transfer";
+import { Transfer as ActivityTransfer } from "@frontend/activity";
 
 export const TransferList = (): JSX.Element => {
     const paginatedTransfersEnabled = usePaginatedTransfersEnabled();
@@ -27,8 +28,7 @@ export const TransferList = (): JSX.Element => {
                 isLoading={loading}
                 end={!hasNextPage}
                 onEndReached={handleEndReached}
-                renderItem={(transfer: any) => <Transfer transfer={transfer} />}
-                // renderItem={(transfer: any) => <Typography variant="body1">{JSON.stringify(transfer, null, 2)}</Typography>}
+                renderItem={(transfer: ActivityTransfer) => <Transfer transfer={transfer} />}
                 nothingToShow={<TransferListNothingToShow />}
                 observerOffset="5rem"
             />

@@ -1,9 +1,9 @@
-import { getInstance } from "@frontend/core/common/utils/singleton";
-import { ActivityController } from "../../domain/controllers";
 import { useBridgeChainsState, useBridgeWalletsState } from "@frontend/bridge/ui/state";
-import { PaginatedTransfers } from "../../common";
-import { useInfiniteApiQuery } from "@frontend/query/react";
-import { UseInfiniteQueryResult } from "@tanstack/react-query";
+import { Transfer } from "../../../common";
+import { InfiniteData, UseInfiniteQueryResult } from "@tanstack/react-query";
+import { useGetPaginatedTransfersPaginationMerger } from "./use-get-paginated-transfers";
+import { PaginationMergerGetPageParams, PaginationMergerGetPageResult } from "../../../../../../shared/utils/src";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 export interface UseGetPaginatedTransfersProps {
     page: number;
@@ -53,28 +53,42 @@ export function usePaginatedTransfersEnabled(enabled = true): boolean {
  * @returns The paginated transfers.
  */
 export function useGetPaginatedTransfers(
-    { page, pageSize }: UseGetPaginatedTransfersProps = { page: 1, pageSize: 25 },
-): UseInfiniteQueryResult<PaginatedTransfers, Error> {
+    { page, pageSize }: UseGetPaginatedTransfersProps = { page: 1, pageSize: 10 },
+): UseInfiniteQueryResult<InfiniteData<PaginationMergerGetPageResult<Transfer>, Error>> {
     const { originChain, destinationChain } = useBridgeChainsState();
     const { originWallet } = useBridgeWalletsState();
 
     const originWalletAddress = originWallet.connection === "connected" ? originWallet.address : undefined;
 
+    const getPaginatedTransfersPaginationMerger = useGetPaginatedTransfersPaginationMerger({
+        page,
+        pageSize,
+        sourceChainId: originChain?.id,
+        destinationChainId: destinationChain?.id,
+        sourceWalletAddress: originWalletAddress,
+    });
+
     const queryEnabled = usePaginatedTransfersEnabled();
     const queryKey = getPaginatedTransfersQueryKey(page, pageSize, originChain?.id, destinationChain?.id, originWalletAddress);
 
-    return useInfiniteApiQuery({
+    return useInfiniteQuery<
+        PaginationMergerGetPageResult<Transfer>,
+        Error,
+        InfiniteData<PaginationMergerGetPageResult<Transfer>, Error>,
+        any[],
+        PaginationMergerGetPageParams
+    >({
         queryKey,
-        queryFn: ({ pageParam = 1 }) =>
-            getInstance(ActivityController).getPaginatedTransfers(
-                pageParam,
-                pageSize,
-                originChain?.id,
-                destinationChain?.id,
-                originWalletAddress,
-            ),
+        queryFn: ({ pageParam }) => getPaginatedTransfersPaginationMerger.getPage(pageSize, pageParam),
         enabled: queryEnabled,
         staleTime: 3000,
-        initialPageParam: 1,
+        initialPageParam: undefined,
+        getNextPageParam: (lastPage) =>
+            lastPage.isLastPage
+                ? undefined
+                : {
+                      nextPageParams: lastPage.nextPageParams,
+                      rest: lastPage.rest,
+                  },
     });
 }

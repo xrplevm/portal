@@ -35,7 +35,7 @@ declare module "@frontend/core/domain/controller/factory" {
 }
 
 ControllerFactory.create({
-    activityController: () => new ActivityController(ServiceFactory.axelarService, StateManager.states.bridgeChains),
+    activityController: () => new ActivityController(ServiceFactory.axelarService),
     settingsController: () =>
         new SettingsController(RepositoryFactory.settingsRepository, ServiceFactory.localizationService, StateManager.states.settings),
     chainController: () => new ChainController(ServiceFactory.axelarService),

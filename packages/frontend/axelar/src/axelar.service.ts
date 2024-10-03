@@ -136,6 +136,15 @@ export class AxelarService implements IAxelarService {
     }
 
     /**
+     * Get a chain by its id.
+     * @param id The id of the chain to get.
+     * @returns The chain with the given id, or undefined if it doesn't exist.
+     */
+    async getChainById(id: string): Promise<Chain | undefined> {
+        return (await this.getChains()).find((chain) => chain.id === id);
+    }
+
+    /**
      * Get paginated transfers.
      * @param page The page number.
      * @param pageSize The page size.
@@ -168,7 +177,30 @@ export class AxelarService implements IAxelarService {
         try {
             const data = (await response.json()) as AxelarGMPTransfersObject;
 
-            return new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
+            const paginatedTransfers = new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
+
+            const items = await Promise.all(
+                paginatedTransfers.items.map(async (transfer) => {
+                    const [sourceChain, destinationChain] = await Promise.all([
+                        this.getChainById(transfer.sourceChainId),
+                        this.getChainById(transfer.destinationChainId),
+                    ]);
+                    return {
+                        ...transfer,
+                        createdAt: transfer.createdAt * 1000,
+                        sourceChain,
+                        destinationChain,
+                    };
+                }),
+            );
+
+            return {
+                items,
+                total: paginatedTransfers.total,
+                pages: paginatedTransfers.pages,
+                currentPage: paginatedTransfers.currentPage,
+                pageSize: paginatedTransfers.pageSize,
+            };
         } catch (_) {
             throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_PARSE_ERROR);
         }

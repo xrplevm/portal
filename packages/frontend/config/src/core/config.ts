@@ -41,6 +41,7 @@ export const config: CoreConfig = {
         x: "https://twitter.com/Peersyst",
         featureRequest: "mailto:info@peersyst.com?subject=[XRPL EVM Feature Request]",
     },
+    featuredChains: ["xrpl-evm-sidechain"],
     axelar: {
         url: "https://devnet-amplifier.axelarscan.io", //"https://axelarscan.io"
         apiUrl: "https://devnet-amplifier.api.axelarscan.io/api", //"https://api.axelarscan.io/api",
@@ -55,11 +56,11 @@ export const config: CoreConfig = {
             // optimism: true,
             // fantom: true,
             "core-ethereum": true,
-            //"core-avalanche": true,
-            //"core-optimism": true,
             "xrpl-evm-sidechain": true,
             "avalanche-fuji": true,
             "solana-devnet": true,
+            "starknet-devnet": true,
+            "core-optimism": true,
         },
         additionalChainData: {
             xrpl: {

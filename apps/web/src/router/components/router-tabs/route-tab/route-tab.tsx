@@ -1,9 +1,9 @@
-import { RouteTabProps } from "./router-tab.types";
+import { RouteTabProps } from "./route-tab.types";
 import { Tab, useSetTab } from "@frontend/design-system-react/tabs";
 import { useEffect } from "react";
 import { Link, useLocation, matchPath } from "react-router-dom";
 
-const RouteTab = ({ to, index, children, ...restTabProps }: RouteTabProps): JSX.Element => {
+export const RouteTab = ({ to, index, children, ...restTabProps }: RouteTabProps): JSX.Element => {
     const { pathname } = useLocation();
 
     const setTab = useSetTab();
@@ -20,5 +20,3 @@ const RouteTab = ({ to, index, children, ...restTabProps }: RouteTabProps): JSX.
         </Link>
     );
 };
-
-export default RouteTab;

@@ -1,5 +1,5 @@
 import { RouteObject } from "react-router-dom";
-import ActivityPage from "../pages/activity-page";
+import { ActivityPage } from "../pages/activity-page";
 import { ActivityRoutes } from "./activity-router.types";
 
 /**

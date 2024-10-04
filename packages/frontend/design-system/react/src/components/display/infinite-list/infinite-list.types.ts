@@ -8,15 +8,10 @@ export type EnhancedInfiniteScrollProps = {
     end?: BaseInfiniteScrollProps["end"];
 } & Omit<BaseInfiniteScrollProps, "callback" | "children" | "loading" | "end" | "loaderElement">;
 
-export type InfiniteData<T> = {
-    pages: T[];
-    pageParams: unknown[];
-};
-
 export type InfiniteScrollDataProps<E> = {
-    data: InfiniteData<PaginatedData<E[]>> | undefined;
-    children?: ((item: PaginatedData<E[]>["items"][number], index: number) => ReactElement) | ReactElement;
-    renderItem?: (item: PaginatedData<E[]>["items"][number], index: number) => ReactElement;
+    data: E[] | undefined;
+    children?: ((item: E, index: number) => ReactElement) | ReactElement;
+    renderItem?: (item: E, index: number) => ReactElement;
 } & EnhancedInfiniteScrollProps &
     DataLoaderProps;
 

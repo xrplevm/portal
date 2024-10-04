@@ -29,7 +29,6 @@
         "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
-        "@frontend/token": "workspace:*",
         "@shared/modules": "workspace:*",
         "@tanstack/react-query": "^5.52.2"
     },
@@ -38,7 +37,6 @@
         "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
-        "@frontend/token": "workspace:*",
         "@shared/eslint": "workspace:*",
         "@shared/modules": "workspace:*",
         "@shared/test": "workspace:*",

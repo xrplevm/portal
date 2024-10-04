@@ -1,4 +1,37 @@
-// TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
+import { Chain, ChainObject } from "@frontend/chain";
+
+export type TransferObject = {
+    hash: string;
+    from: string;
+    to: string;
+    amount: string;
+    symbol: string;
+    decimals: number;
+    createdAt: number;
+    sourceChain: ChainObject;
+    destinationChain: ChainObject;
+};
+
 export class Transfer {
-    constructor() {}
+    hash: string;
+    from: string;
+    to: string;
+    amount: string;
+    symbol: string;
+    decimals: number;
+    createdAt: number;
+    sourceChain: Chain;
+    destinationChain: Chain;
+
+    constructor(transferObject: TransferObject) {
+        this.hash = transferObject.hash;
+        this.from = transferObject.from;
+        this.to = transferObject.to;
+        this.amount = transferObject.amount;
+        this.symbol = transferObject.symbol;
+        this.decimals = transferObject.decimals;
+        this.createdAt = transferObject.createdAt;
+        this.sourceChain = new Chain(transferObject.sourceChain);
+        this.destinationChain = new Chain(transferObject.destinationChain);
+    }
 }

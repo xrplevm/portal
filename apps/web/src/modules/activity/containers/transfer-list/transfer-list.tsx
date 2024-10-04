@@ -3,11 +3,12 @@ import { TransferInfiniteList, TransferListRoot } from "./transfer-list.styles";
 import { useRef } from "react";
 import { setRef } from "@peersyst/react-utils";
 import { Transfer } from "../transfer/transfer";
-import { useGetPaginatedTransfers, usePaginatedTransfersEnabled } from "@frontend/activity/ui/queries";
+import { useGetTransfers, usePaginatedTransfersEnabled } from "@frontend/activity/ui/queries";
+import { Transfer as ActivityTransfer } from "@frontend/activity";
 
 export const TransferList = (): JSX.Element => {
     const paginatedTransfersEnabled = usePaginatedTransfersEnabled();
-    const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useGetPaginatedTransfers();
+    const { data, isLoading, isFetching, fetchNextPage, hasNextPage } = useGetTransfers();
 
     const rootRef = useRef();
 
@@ -18,14 +19,14 @@ export const TransferList = (): JSX.Element => {
     };
 
     return (
-        <TransferListRoot ref={(r) => setRef(rootRef, r)} isEmpty={data?.pages[0].items.length === 0 && !loading}>
-            <TransferInfiniteList
+        <TransferListRoot ref={(r) => setRef(rootRef, r)} isEmpty={data?.length === 0 && !loading}>
+            <TransferInfiniteList<ActivityTransfer>
                 container={rootRef as any} // Ref types conflict
                 data={data}
                 isLoading={loading}
                 end={!hasNextPage}
                 onEndReached={handleEndReached}
-                renderItem={(transfer) => <Transfer transfer={transfer} />}
+                renderItem={(transfer: ActivityTransfer) => <Transfer transfer={transfer} />}
                 nothingToShow={<TransferListNothingToShow />}
                 observerOffset="5rem"
             />

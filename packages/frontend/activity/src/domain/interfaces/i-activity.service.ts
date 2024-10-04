@@ -1,4 +1,11 @@
+import { PaginatedTransfers } from "../../common";
+
 export interface IActivityService {
-    // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
-    getPaginatedTransfers(): Promise<any>;
+    getPaginatedTransfers(
+        page: number,
+        pageSize: number,
+        sourceChain?: string,
+        destinationChain?: string,
+        sender?: string,
+    ): Promise<PaginatedTransfers>;
 }

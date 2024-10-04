@@ -18,8 +18,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
     const translate = useTranslate();
     const { spacing } = useTheme();
 
-    // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
-    const amount = new Amount(transfer.value, 0, "");
+    const amount = new Amount(transfer.amount, transfer.decimals, transfer.symbol);
     const formattedAmount = amount.formatAmount();
 
     return (
@@ -28,10 +27,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                 <Row flex={1} alignItems="center" justifyContent="space-between">
                     <ChainSequence origin={transfer.sourceChain} destination={transfer.destinationChain} />
                     <Row alignItems="center" gap={spacing[4]}>
-                        <TransferToken
-                            tokenImageUrl={transfer.lockingChainToken.imageUrl}
-                            nativeChainImageUrl={transfer.lockingChain.imageUrl}
-                        />
+                        <TransferToken tokenImageUrl={transfer.sourceChain?.image} nativeChainImageUrl={transfer.destinationChain?.image} />
                         <Col justifyContent="center" alignItems="start">
                             <Row gap={spacing[2]}>
                                 <Typography variant="body1Regular" textAlign="right" fontWeight={700}>

@@ -16,13 +16,12 @@ export function InfiniteList<E>({
     gap,
     ...rest
 }: InfiniteListProps<E>) {
-    const pages = data?.pages || [];
-    const hasItems = isLoading || pages.length > 0;
+    const hasItems = isLoading || (data && data.length > 0);
 
     return (
         <InfiniteScroll end={!hasItems || end} loading={isLoading} callback={onEndReached} {...rest}>
             <List
-                data={data?.pages.flatMap((page) => page.items)}
+                data={data}
                 isLoading={isLoading}
                 numberOfSkeletons={numberOfSkeletons}
                 Skeleton={Skeleton}

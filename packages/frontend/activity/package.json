@@ -26,6 +26,7 @@
     },
     "peerDependencies": {
         "@frontend/bridge": "workspace:*",
+        "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
         "@shared/modules": "workspace:*",
@@ -33,6 +34,7 @@
     },
     "devDependencies": {
         "@frontend/bridge": "workspace:*",
+        "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
         "@shared/eslint": "workspace:*",
@@ -42,6 +44,7 @@
         "@shared/tsup": "workspace:*",
         "@tanstack/react-query": "^5.52.2",
         "@types/jest": "^29.5.12",
+        "@types/react": "^18.3.4",
         "jest": "^29.7.0",
         "ts-jest": "^29.2.5",
         "typescript": "latest"

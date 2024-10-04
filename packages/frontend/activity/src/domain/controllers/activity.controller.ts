@@ -1,17 +1,28 @@
 import { Controller } from "@frontend/core/domain/controller";
 import { IActivityController } from "../../ui/interfaces";
 import { IActivityService } from "../interfaces";
+import { PaginatedTransfers } from "../../common";
 
 @Controller()
 export class ActivityController implements IActivityController {
-    constructor(private readonly _activityService: IActivityService) {}
+    constructor(private readonly activityService: IActivityService) {}
 
     /**
      * Gets the paginated transfers.
+     * @param page The page number.
+     * @param pageSize The page size.
+     * @param sourceChain The source chain.
+     * @param destinationChain The destination chain.
+     * @param sender The sender.
      * @returns The paginated transfers.
      */
-    // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
-    async getPaginatedTransfers(): Promise<any> {
-        return this._activityService.getPaginatedTransfers();
+    async getPaginatedTransfers(
+        page: number,
+        pageSize: number,
+        sourceChain?: string,
+        destinationChain?: string,
+        sender?: string,
+    ): Promise<PaginatedTransfers> {
+        return await this.activityService.getPaginatedTransfers(page, pageSize, sourceChain, destinationChain, sender);
     }
 }

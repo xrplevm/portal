@@ -1,6 +1,6 @@
-import { ChainDto } from "@shared/api";
+import { Chain } from "@frontend/chain";
 
 export interface ChainSequenceProps {
-    origin: ChainDto;
-    destination: ChainDto;
+    origin: Chain;
+    destination: Chain;
 }

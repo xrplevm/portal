@@ -1,8 +1,8 @@
-import { TransferListNothingToShow } from "../transfer-list-nothing-to-show/transfer-list-nothing-to-show";
+import { TransferListNothingToShow } from "./transfer-list-nothing-to-show/transfer-list-nothing-to-show";
 import { TransferInfiniteList, TransferListRoot } from "./transfer-list.styles";
 import { useRef } from "react";
 import { setRef } from "@peersyst/react-utils";
-import { Transfer } from "../../components/display/transfer/transfer";
+import { Transfer } from "../transfer/transfer";
 import { useGetPaginatedTransfers, usePaginatedTransfersEnabled } from "@frontend/activity/ui/queries";
 
 export const TransferList = (): JSX.Element => {

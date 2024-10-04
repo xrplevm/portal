@@ -3,7 +3,6 @@ import { Row } from "@frontend/design-system-react/row";
 import { Col } from "@frontend/design-system-react/col";
 import { Typography } from "@frontend/design-system-react/typography";
 import { TransferField } from "./transfer-field/transfer-field";
-import BlockchainAddressExplorerLink from "../../../../blockchain/components/navigation/blockchain-address-explorer-link/blockchain-address-explorer-link";
 import { useTranslate } from "@frontend/locale/react";
 import Amount from "@shared/amount";
 import { TransferProps } from "./transfer.types";
@@ -12,6 +11,7 @@ import { DateDisplay } from "@frontend/design-system-react/date-display";
 import { useTheme } from "@frontend/design-system-react/theme";
 import { DateFormat } from "@frontend/misc/ui/date";
 import { Expandable } from "@frontend/design-system-react/expandable";
+import { BlockchainAddressExplorerLink } from "../../../blockchain/components/navigation/blockchain-address-explorer-link/blockchain-address-explorer-link";
 
 // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
 export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
@@ -20,6 +20,7 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
 
     // TODO: https://www.notion.so/Axelar-Add-activity-page-10e21cedf84a80f3b9d3df03ee35545f?pvs=4
     const amount = new Amount(transfer.value, 0, "");
+    const formattedAmount = amount.formatAmount();
 
     return (
         <Expandable className="Transfer">
@@ -33,11 +34,11 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                         />
                         <Col justifyContent="center" alignItems="start">
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1" textAlign="right" fontWeight={700}>
-                                    {amount.formatAmount()} {amount.currency}
+                                <Typography variant="body1Regular" textAlign="right" fontWeight={700}>
+                                    {formattedAmount} {amount.currency}
                                 </Typography>
                             </Row>
-                            <DateDisplay variant="caption2" color="grey.400" textAlign="right" date={transfer.createdAt} />
+                            <DateDisplay variant="caption2Regular" color="grey.400" textAlign="right" date={transfer.createdAt} />
                         </Col>
                     </Row>
                 </Row>
@@ -49,13 +50,13 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                             <BlockchainAddressExplorerLink
                                 chain={transfer.sourceChain}
                                 address={transfer.from}
-                                variant="body1"
+                                variant="body1Regular"
                                 type="account"
                             />
                         </TransferField>
                         <TransferField label={translate("to")}>
                             <BlockchainAddressExplorerLink
-                                variant="body1"
+                                variant="body1Regular"
                                 type="account"
                                 address={transfer.to}
                                 chain={transfer.destinationChain}
@@ -67,21 +68,21 @@ export const Transfer = ({ transfer }: TransferProps): JSX.Element => {
                     <Row alignItems="flex-start" justifyContent="space-between">
                         <TransferField label={translate("amount")}>
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1">
-                                    {amount.formatAmount()} {amount.currency}
+                                <Typography variant="body1Regular">
+                                    {formattedAmount} {amount.currency}
                                 </Typography>
                             </Row>
                         </TransferField>
                         <TransferField label={translate("received")}>
                             <Row gap={spacing[2]}>
-                                <Typography variant="body1">
-                                    {amount.formatAmount()} {amount.currency}
+                                <Typography variant="body1Regular">
+                                    {formattedAmount} {amount.currency}
                                 </Typography>
                             </Row>
                         </TransferField>
                         <TransferField label={translate("date")} css={{ width: "fit-content" }}>
                             <Row gap={spacing[2]}>
-                                <DateDisplay format={DateFormat.DATE_TIME} variant="body1" date={transfer.createdAt} />
+                                <DateDisplay format={DateFormat.DATE_TIME} variant="body1Regular" date={transfer.createdAt} />
                             </Row>
                         </TransferField>
                     </Row>

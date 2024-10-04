@@ -26,19 +26,15 @@
     },
     "peerDependencies": {
         "@frontend/bridge": "workspace:*",
-        "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
-        "@frontend/token": "workspace:*",
         "@shared/modules": "workspace:*",
         "@tanstack/react-query": "^5.52.2"
     },
     "devDependencies": {
         "@frontend/bridge": "workspace:*",
-        "@frontend/chain": "workspace:*",
         "@frontend/core": "workspace:*",
         "@frontend/query": "workspace:*",
-        "@frontend/token": "workspace:*",
         "@shared/eslint": "workspace:*",
         "@shared/modules": "workspace:*",
         "@shared/test": "workspace:*",

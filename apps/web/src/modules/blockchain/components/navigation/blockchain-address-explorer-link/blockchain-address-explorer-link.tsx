@@ -4,7 +4,7 @@ import { Row } from "@frontend/design-system-react/row";
 import { ExplorerLink } from "../explorer-link/explorer-link";
 import { useTheme } from "@frontend/design-system-react/theme";
 
-const BlockchainAddressExplorerLink = ({ chain, address, type, ...props }: BlockchainAddressExplorerLinkProps): JSX.Element => {
+export const BlockchainAddressExplorerLink = ({ chain, address, type, ...props }: BlockchainAddressExplorerLinkProps): JSX.Element => {
     const explorerUrl = getExplorerUrl(chain.explorer, address, type);
 
     const { spacing } = useTheme();
@@ -16,5 +16,3 @@ const BlockchainAddressExplorerLink = ({ chain, address, type, ...props }: Block
         </Row>
     );
 };
-
-export default BlockchainAddressExplorerLink;

@@ -8,4 +8,6 @@ export const AxelarGMPReturnValuesObjectMock = mockify<AxelarGMPReturnValuesObje
     messageID: "msg123456",
     messageId: "msg123456",
     payloadHash: "0x0123456789abcdef",
+    sourceChain: "xrpl",
+    destinationChain: "xrpl-evm",
 });

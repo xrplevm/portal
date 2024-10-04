@@ -1,11 +1,4 @@
-import { Transfer, TransferObject } from "./transfer";
-
-export type PaginatedTransfersObject = {
-    items: TransferObject[];
-    total: number;
-    page: number;
-    pageSize: number;
-};
+import { Transfer } from "./transfer";
 
 export class PaginatedTransfers {
     items: Transfer[];
@@ -14,11 +7,11 @@ export class PaginatedTransfers {
     currentPage: number;
     pageSize: number;
 
-    constructor(paginatedTransfersObject: PaginatedTransfersObject) {
-        this.items = paginatedTransfersObject.items.map((item) => new Transfer(item));
-        this.total = paginatedTransfersObject.total;
-        this.pages = Math.ceil(paginatedTransfersObject.total / paginatedTransfersObject.pageSize) + 1;
-        this.currentPage = paginatedTransfersObject.page;
-        this.pageSize = paginatedTransfersObject.pageSize;
+    constructor(transfers: Transfer[], total: number, page: number, pageSize: number) {
+        this.items = transfers;
+        this.total = total;
+        this.pages = Math.ceil(total / pageSize) + 1;
+        this.currentPage = page;
+        this.pageSize = pageSize;
     }
 }

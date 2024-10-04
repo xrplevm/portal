@@ -10,6 +10,8 @@ import { ChainMock } from "@frontend/chain/mocks/common";
 import { AxelarInterchainToken } from "../../src/models/axelar-interchain-token";
 import { AxelarGMPTransferContractMethod } from "../../src";
 import { AxelarGMPTransfersObjectMock } from "../mocks/types/axelar-gmp-transfers-object.mock";
+import { PaginatedTransfers } from "@frontend/activity";
+import { AxelarTransfer } from "../../src/models/axelar-transfer";
 
 describe("AxelarService", () => {
     let axelarService: AxelarService;
@@ -99,12 +101,12 @@ describe("AxelarService", () => {
             }))();
             const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValueOnce(fetchResultMock);
 
-            const chains = await axelarService.getBridgeTokens(chainMock, otherChainMock);
+            const tokens = await axelarService.getBridgeTokens(chainMock, otherChainMock);
 
             expect(fetchSpy).toHaveBeenCalledWith(`${configManagerMock.get("axelar.apiUrl")}/getChains`, {
                 headers: { "Content-Type": "application/json" },
             });
-            expect(chains).toEqual(
+            expect(tokens).toEqual(
                 getTokensResponseMock.map((token) =>
                     new AxelarInterchainToken(token, configManagerMock.get("axelar.url")).toBridgeToken(chainMock),
                 ),
@@ -138,6 +140,7 @@ describe("AxelarService", () => {
     describe("getPaginatedTransfers", () => {
         it("should return the paginated transfers", async () => {
             const axelarGMPTransfersObjectMock = new AxelarGMPTransfersObjectMock();
+            const chainMock = new ChainMock();
 
             const fetchResultMock = new (mockify<Response>({
                 ok: true,
@@ -145,7 +148,7 @@ describe("AxelarService", () => {
             }))();
             const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValueOnce(fetchResultMock);
 
-            jest.spyOn(axelarService, "getChainById").mockResolvedValue(new ChainMock());
+            const getChainByIdSpy = jest.spyOn(axelarService, "getChainById").mockResolvedValue(chainMock);
 
             const paginatedTransfers = await axelarService.getPaginatedTransfers(1, 10);
 
@@ -162,7 +165,16 @@ describe("AxelarService", () => {
                 }),
             });
 
-            expect(paginatedTransfers.items).toHaveLength(axelarGMPTransfersObjectMock.data.length);
+            expect(paginatedTransfers).toEqual(
+                new PaginatedTransfers(
+                    axelarGMPTransfersObjectMock.data.map((item) => new AxelarTransfer(item).toTransfer(chainMock, chainMock)),
+                    paginatedTransfers.total,
+                    paginatedTransfers.currentPage,
+                    paginatedTransfers.pageSize,
+                ),
+            );
+
+            getChainByIdSpy.mockReset();
         });
 
         it("should throw an error if the response is not ok", async () => {

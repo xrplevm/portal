@@ -12,9 +12,9 @@ import { BridgeToken } from "@frontend/bridge";
 import { GetITSAssetsResponse } from "./responses/get-it-assets.response";
 import { AxelarInterchainToken } from "./models/axelar-interchain-token";
 import { AxelarInterchainTokenObject } from "./types/axelar-interchain-token.types";
-import { AxelarGMPTransferContractMethod, AxelarGMPTransfersObject } from "./types/axelar-gmp.types";
-import { PaginatedAxelarTransfers } from "./models/axelar-paginated-transfers";
+import { AxelarGMPTransfersObject } from "./types/axelar-gmp.types";
 import { PaginatedTransfers, Transfer } from "@frontend/activity";
+import { AxelarTransfer } from "./models/axelar-transfer";
 
 @Service()
 export class AxelarService implements IAxelarService {
@@ -168,42 +168,31 @@ export class AxelarService implements IAxelarService {
                 from: (page - 1) * pageSize,
                 sourceChain,
                 destinationChain,
-                contractMethod: AxelarGMPTransferContractMethod.INTERCHAIN_TRANSFER,
+                // contractMethod: AxelarGMPTransferContractMethod.INTERCHAIN_TRANSFER,
                 senderAddress: sender,
             }),
         });
         if (!response.ok) throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_FETCH_ERROR);
 
         try {
-            const data = (await response.json()) as AxelarGMPTransfersObject;
-
-            const paginatedTransfers = new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
+            const res = (await response.json()) as AxelarGMPTransfersObject;
 
             const items: Transfer[] = [];
 
-            for (const transfer of paginatedTransfers.items) {
+            for (const axelarTransfer of res.data) {
+                if (!axelarTransfer.call.returnValues.sourceChain || !axelarTransfer.call.returnValues.destinationChain) continue;
+
                 const [sourceChain, destinationChain] = await Promise.all([
-                    this.getChainById(transfer.sourceChainId),
-                    this.getChainById(transfer.destinationChainId),
+                    this.getChainById(axelarTransfer.call.returnValues.sourceChain),
+                    this.getChainById(axelarTransfer.call.returnValues.destinationChain),
                 ]);
 
                 if (!sourceChain || !destinationChain) continue;
 
-                items.push({
-                    ...transfer,
-                    createdAt: transfer.createdAt * 1000,
-                    sourceChain,
-                    destinationChain,
-                });
+                items.push(new AxelarTransfer(axelarTransfer).toTransfer(sourceChain, destinationChain));
             }
 
-            return {
-                items,
-                total: paginatedTransfers.total,
-                pages: paginatedTransfers.pages,
-                currentPage: paginatedTransfers.currentPage,
-                pageSize: paginatedTransfers.pageSize,
-            };
+            return new PaginatedTransfers(items, res.total, page, pageSize);
         } catch (_) {
             throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_PARSE_ERROR);
         }

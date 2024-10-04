@@ -1,4 +1,5 @@
 import { ActivityController } from "../../../../src/domain/controllers/activity.controller";
+import { PaginatedTransfersMock } from "../../../mocks/common";
 import { ActivityServiceMock } from "../../../mocks/domain/interfaces/activity.service.mock";
 
 describe("ActivityController", () => {
@@ -20,7 +21,10 @@ describe("ActivityController", () => {
 
     describe("getPaginatedTransfers", () => {
         it("should return the paginated transfers", async () => {
-            const transfers = await activityController.getPaginatedTransfers(
+            const paginatedTransfersMock = new PaginatedTransfersMock();
+            activityServiceMock.getPaginatedTransfers.mockResolvedValueOnce(paginatedTransfersMock);
+
+            const paginatedTransfersResult = await activityController.getPaginatedTransfers(
                 page,
                 pageSize,
                 sourceChainAddress,
@@ -28,7 +32,7 @@ describe("ActivityController", () => {
                 senderAddress,
             );
 
-            expect(transfers).toHaveLength(2);
+            expect(paginatedTransfersResult).toEqual(paginatedTransfersMock);
             expect(activityServiceMock.getPaginatedTransfers).toHaveBeenCalledWith(
                 page,
                 pageSize,

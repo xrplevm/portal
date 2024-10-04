@@ -9,7 +9,6 @@ function Routes(): JSX.Element | null {
     const homeRoutes = useHomeRoutes();
     return useRoutes([
         ...homeRoutes,
-
         {
             path: "*",
             element: <Navigate to={BridgeRoutes.BRIDGE} />,

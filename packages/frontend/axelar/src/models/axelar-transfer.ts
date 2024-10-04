@@ -1,5 +1,6 @@
 import { Transfer } from "@frontend/activity";
 import { AxelarGMPTransferCallObject, AxelarGMPTransferConfirmObject, AxelarGMPTransferObject } from "../types";
+import { ChainObject } from "@frontend/chain";
 
 export class AxelarTransfer {
     approved: AxelarGMPTransferCallObject;
@@ -32,7 +33,7 @@ export class AxelarTransfer {
     // timeSpent: AxelarGMPTransferTimeSpent;
     toRefund: boolean;
 
-    constructor(axelarTransfer: AxelarGMPTransferObject, _: string) {
+    constructor(axelarTransfer: AxelarGMPTransferObject) {
         this.approved = axelarTransfer.approved;
         this.call = axelarTransfer.call;
         this.commandId = axelarTransfer.command_id;
@@ -62,20 +63,22 @@ export class AxelarTransfer {
 
     /**
      * Converts the Axelar transfer to a transfer object.
+     * @param sourceChain The source chain object.
+     * @param destinationChain The destination chain object.
      * @returns The transfer object.
      */
-    toTransfer(): Transfer {
+    toTransfer(sourceChain: ChainObject, destinationChain: ChainObject): Transfer {
         return new Transfer({
             hash: this.id,
-            sourceChainId: this.call.returnValues.sourceChain || "",
-            destinationChainId: this.call.returnValues.destinationChain || "",
             from: this.call.returnValues.sourceAddress || "",
             to: this.call.returnValues.destinationAddress || "",
             // TODO: Add amount when axelar api returns it
             amount: "100000",
             symbol: "EUR",
             decimals: 6,
-            createdAt: this.call.block_timestamp,
+            createdAt: this.call.block_timestamp * 1000,
+            sourceChain,
+            destinationChain,
         });
     }
 }

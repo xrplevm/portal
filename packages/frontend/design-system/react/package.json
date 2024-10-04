@@ -16,6 +16,7 @@
     },
     "exports": {
         ".": "./src/core/index.ts",
+        "./assets/images": "./src/assets/images/index.ts",
         "./config": "./src/config/index.ts",
         "./themes": "./src/themes/index.ts",
         "./theme": "./src/themes/common/index.ts",
@@ -53,6 +54,7 @@
         "./alert": "./src/components/feedback/alert/index.ts",
         "./alert-callout": "./src/components/feedback/alert-callout/index.ts",
         "./clock-callout": "./src/components/feedback/clock-callout/index.ts",
+        "./expandable": "./src/components/feedback/expandable/index.ts",
         "./loader": "./src/components/feedback/loader/index.ts",
         "./modal": "./src/components/feedback/modal/index.ts",
         "./nothing-to-show": "./src/components/feedback/nothing-to-show/index.ts",

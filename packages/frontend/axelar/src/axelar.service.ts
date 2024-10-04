@@ -177,7 +177,11 @@ export class AxelarService implements IAxelarService {
         try {
             const data = (await response.json()) as AxelarGMPTransfersObject;
 
+            console.log("data", data);
+
             const paginatedTransfers = new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
+
+            console.log("paginatedTransfers", paginatedTransfers);
 
             const items = await Promise.all(
                 paginatedTransfers.items.map(async (transfer) => {
@@ -201,7 +205,8 @@ export class AxelarService implements IAxelarService {
                 currentPage: paginatedTransfers.currentPage,
                 pageSize: paginatedTransfers.pageSize,
             };
-        } catch (_) {
+        } catch (e) {
+            console.log("error", e);
             throw new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_PARSE_ERROR);
         }
     }

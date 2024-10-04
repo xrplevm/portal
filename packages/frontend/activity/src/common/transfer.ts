@@ -22,8 +22,8 @@ export class Transfer {
     symbol: string;
     decimals: number;
     createdAt: number;
-    sourceChain?: Chain;
-    destinationChain?: Chain;
+    sourceChain: Chain;
+    destinationChain: Chain;
 
     constructor(transferObject: TransferObject) {
         this.hash = transferObject.hash;

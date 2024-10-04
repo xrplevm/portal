@@ -25,6 +25,7 @@ export interface CoreConfig extends BaseConfig {
         x: string;
         featureRequest: string;
     };
+    featuredChains: string[];
     axelar: {
         url: string;
         apiUrl: string;

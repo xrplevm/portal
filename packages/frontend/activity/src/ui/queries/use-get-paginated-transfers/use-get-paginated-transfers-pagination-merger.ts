@@ -5,11 +5,10 @@ import { getInstance } from "@frontend/core/common/utils/singleton";
 import { ActivityController } from "../../../domain/controllers";
 
 export type UseGetPaginatedTransfersPaginationMergerProps = {
-    page: number;
-    pageSize: number;
     sourceChainId?: string;
     destinationChainId?: string;
     sourceWalletAddress?: string;
+    pageSize?: number;
 };
 
 /**
@@ -18,10 +17,10 @@ export type UseGetPaginatedTransfersPaginationMergerProps = {
  * @returns The pagination merger.
  */
 export function useGetPaginatedTransfersPaginationMerger({
-    pageSize,
     sourceChainId,
     destinationChainId,
     sourceWalletAddress,
+    pageSize = 10,
 }: UseGetPaginatedTransfersPaginationMergerProps): PaginationMerger<Transfer> {
     return useMemo(
         () =>
@@ -69,6 +68,6 @@ export function useGetPaginatedTransfersPaginationMerger({
                     compare: (a: Transfer, b: Transfer) => a.createdAt > b.createdAt,
                 },
             ),
-        [],
+        [sourceChainId, destinationChainId, sourceWalletAddress, pageSize],
     );
 }

@@ -7,6 +7,7 @@ import { useGetChains } from "@frontend/chain/ui/queries";
 import { ControllerFactory } from "@frontend/core/domain/controller/factory";
 import { ChainSelect } from "@frontend/design-system-react/chain-select";
 import { Chain } from "@frontend/chain";
+import { useConfig } from "@frontend/config/react";
 
 export function BridgeChainSelector({
     disabled = false,
@@ -15,6 +16,7 @@ export function BridgeChainSelector({
     ...rest
 }: BridgeChainSelectorProps): JSX.Element {
     const translate = useTranslate();
+    const featuredChains = useConfig("featuredChains");
 
     const placeholder = placeholderProp ?? translate("select");
 
@@ -25,8 +27,9 @@ export function BridgeChainSelector({
     const { data: allChains = [], isLoading } = useGetChains();
     const chains = useMemo(() => {
         if (!otherSideChain) return allChains;
-        else return allChains.filter((chain) => chain.id !== otherSideChain.id);
-    }, [allChains, otherSideChain]);
+        else if (featuredChains.includes(otherSideChain.id)) return allChains.filter((chain) => chain.id !== otherSideChain.id);
+        else return allChains.filter((chain) => featuredChains.includes(chain.id));
+    }, [allChains, otherSideChain, featuredChains]);
 
     const handleChange = (chain: Chain) => {
         if (side === BridgeSource.ORIGIN) ControllerFactory.bridgeChainsController.setOriginChain(chain);

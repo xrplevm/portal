@@ -1,32 +1,31 @@
 import { useBridgeChainsState, useBridgeWalletsState } from "@frontend/bridge/ui/state";
 import { Transfer } from "../../../common";
-import { InfiniteData, UseInfiniteQueryResult } from "@tanstack/react-query";
-import { useGetPaginatedTransfersPaginationMerger } from "./use-get-paginated-transfers";
+import { InfiniteData, UseInfiniteQueryOptions, UseInfiniteQueryResult } from "@tanstack/react-query";
+import { useGetPaginatedTransfersPaginationMerger } from "./use-get-paginated-transfers-pagination-merger";
 import { PaginationMergerGetPageParams, PaginationMergerGetPageResult } from "../../../../../../shared/utils/src";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-export interface UseGetPaginatedTransfersProps {
-    page: number;
-    pageSize: number;
-}
+export type UseGetPaginatedTransfersOptions<T = InfiniteData<PaginationMergerGetPageResult<Transfer>>> = Omit<
+    UseInfiniteQueryOptions<
+        PaginationMergerGetPageResult<Transfer>,
+        Error,
+        T,
+        PaginationMergerGetPageResult<Transfer>,
+        any[],
+        PaginationMergerGetPageParams
+    >,
+    "queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam"
+>;
 
 /**
  * Get the query key for the paginated transfers query.
- * @param page The page number.
- * @param pageSize The page size.
  * @param sourceChain The source chain.
  * @param destinationChain The destination chain.
  * @param originWalletAddress The origin wallet address.
  * @returns The query key.
  */
-export function getPaginatedTransfersQueryKey(
-    page: number,
-    pageSize: number,
-    sourceChain?: string,
-    destinationChain?: string,
-    originWalletAddress?: string,
-): any {
-    return ["paginated-transfers", page, pageSize, sourceChain, destinationChain, originWalletAddress];
+export function getPaginatedTransfersQueryKey(sourceChain?: string, destinationChain?: string, originWalletAddress?: string): any {
+    return ["paginated-transfers", sourceChain, destinationChain, originWalletAddress];
 }
 
 /**
@@ -49,39 +48,33 @@ export function usePaginatedTransfersEnabled(enabled = true): boolean {
 
 /**
  * Get paginated transfers.
- * @param _ The options for the query.
- * @returns The paginated transfers.
+ * @param options The query options.
+ * @returns The paginated transfers query result.
  */
-export function useGetPaginatedTransfers(
-    { page, pageSize }: UseGetPaginatedTransfersProps = { page: 1, pageSize: 10 },
-): UseInfiniteQueryResult<InfiniteData<PaginationMergerGetPageResult<Transfer>, Error>> {
+export function useGetPaginatedTransfers<T = InfiniteData<PaginationMergerGetPageResult<Transfer>>>({
+    enabled = true,
+    select = (x) => x as T,
+    staleTime = 3000,
+    ...restOptions
+}: UseGetPaginatedTransfersOptions<T> = {}): UseInfiniteQueryResult<T> {
     const { originChain, destinationChain } = useBridgeChainsState();
     const { originWallet } = useBridgeWalletsState();
 
     const originWalletAddress = originWallet.connection === "connected" ? originWallet.address : undefined;
 
     const getPaginatedTransfersPaginationMerger = useGetPaginatedTransfersPaginationMerger({
-        page,
-        pageSize,
         sourceChainId: originChain?.id,
         destinationChainId: destinationChain?.id,
         sourceWalletAddress: originWalletAddress,
     });
 
-    const queryEnabled = usePaginatedTransfersEnabled();
-    const queryKey = getPaginatedTransfersQueryKey(page, pageSize, originChain?.id, destinationChain?.id, originWalletAddress);
+    const queryEnabled = usePaginatedTransfersEnabled(enabled as boolean);
+    const queryKey = getPaginatedTransfersQueryKey(originChain?.id, destinationChain?.id, originWalletAddress);
 
-    return useInfiniteQuery<
-        PaginationMergerGetPageResult<Transfer>,
-        Error,
-        InfiniteData<PaginationMergerGetPageResult<Transfer>, Error>,
-        any[],
-        PaginationMergerGetPageParams
-    >({
+    return useInfiniteQuery<PaginationMergerGetPageResult<Transfer>, Error, T, any[], PaginationMergerGetPageParams>({
         queryKey,
-        queryFn: ({ pageParam }) => getPaginatedTransfersPaginationMerger.getPage(pageSize, pageParam),
+        queryFn: ({ pageParam }) => getPaginatedTransfersPaginationMerger.getPage(10, pageParam),
         enabled: queryEnabled,
-        staleTime: 3000,
         initialPageParam: undefined,
         getNextPageParam: (lastPage) =>
             lastPage.isLastPage
@@ -90,5 +83,8 @@ export function useGetPaginatedTransfers(
                       nextPageParams: lastPage.nextPageParams,
                       rest: lastPage.rest,
                   },
+        select,
+        staleTime,
+        ...restOptions,
     });
 }

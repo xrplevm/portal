@@ -3,6 +3,7 @@ import { ConfigManagerEventEmitter } from "./events";
 import { IConfigProvider, IConfigStorage } from "./interfaces";
 import { deepmerge, getAttribute } from "@peersyst/react-utils";
 import { BaseConfig } from "./types";
+import { IS_PROD } from "@shared/env";
 
 export class ConfigManager<Config extends BaseConfig, ProviderConfig extends Omit<Config, "version"> = Omit<Config, "version">> {
     private logger = console;
@@ -94,7 +95,6 @@ export class ConfigManager<Config extends BaseConfig, ProviderConfig extends Omi
      * Loads config from the provider and stores it in the storage.
      */
     private async load(): Promise<void> {
-        const IS_PROD = false;
         if (IS_PROD) {
             const fetchedConfig = await this.provider.fetchConfig();
 

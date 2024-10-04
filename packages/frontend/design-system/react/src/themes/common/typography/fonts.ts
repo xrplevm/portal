@@ -13,7 +13,7 @@ const mainFont = createFont({
         caption2: { component: "p", fontSize: "0.75rem", lineHeight: "133%" },
         caption3: { component: "p", fontSize: "0.6rem", lineHeight: "123%" },
     },
-    weights: ["thin", "extraLight", "light", "regular", "medium", "semibold", "bold", "extraBold", "black", "a" as any],
+    weights: ["thin", "extraLight", "light", "regular", "medium", "semibold", "bold", "extraBold", "black"],
 });
 
 export const fonts = [mainFont] as const;

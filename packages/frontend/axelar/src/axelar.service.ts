@@ -14,7 +14,7 @@ import { AxelarInterchainToken } from "./models/axelar-interchain-token";
 import { AxelarInterchainTokenObject } from "./types/axelar-interchain-token.types";
 import { AxelarGMPTransferContractMethod, AxelarGMPTransfersObject } from "./types/axelar-gmp.types";
 import { PaginatedAxelarTransfers } from "./models/axelar-paginated-transfers";
-import { PaginatedTransfers } from "@frontend/activity";
+import { PaginatedTransfers, Transfer } from "@frontend/activity";
 
 @Service()
 export class AxelarService implements IAxelarService {
@@ -179,20 +179,23 @@ export class AxelarService implements IAxelarService {
 
             const paginatedTransfers = new PaginatedAxelarTransfers(data, page, pageSize, this.url).toPaginatedTransfers();
 
-            const items = await Promise.all(
-                paginatedTransfers.items.map(async (transfer) => {
-                    const [sourceChain, destinationChain] = await Promise.all([
-                        this.getChainById(transfer.sourceChainId),
-                        this.getChainById(transfer.destinationChainId),
-                    ]);
-                    return {
-                        ...transfer,
-                        createdAt: transfer.createdAt * 1000,
-                        sourceChain,
-                        destinationChain,
-                    };
-                }),
-            );
+            const items: Transfer[] = [];
+
+            for (const transfer of paginatedTransfers.items) {
+                const [sourceChain, destinationChain] = await Promise.all([
+                    this.getChainById(transfer.sourceChainId),
+                    this.getChainById(transfer.destinationChainId),
+                ]);
+
+                if (!sourceChain || !destinationChain) continue;
+
+                items.push({
+                    ...transfer,
+                    createdAt: transfer.createdAt * 1000,
+                    sourceChain,
+                    destinationChain,
+                });
+            }
 
             return {
                 items,

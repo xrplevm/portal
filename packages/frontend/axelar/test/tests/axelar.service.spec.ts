@@ -8,6 +8,8 @@ import { AxelarErrors } from "../../src/axelar.errors";
 import { AxelarInterchainTokenObjectMock } from "../mocks/types/axelar-interchain-token-object.mock";
 import { ChainMock } from "@frontend/chain/mocks/common";
 import { AxelarInterchainToken } from "../../src/models/axelar-interchain-token";
+import { AxelarGMPTransferContractMethod } from "../../src";
+import { AxelarGMPTransfersObjectMock } from "../mocks/types/axelar-gmp-transfers-object.mock";
 
 describe("AxelarService", () => {
     let axelarService: AxelarService;
@@ -16,6 +18,7 @@ describe("AxelarService", () => {
 
     const axelarUrlMock = "https://axelar.url";
     const axelarApiUrlMock = "https://axelar.api.url";
+    const axelarGmpUrlMock = "https://axelar.gmp.url";
     const getChainsResponseMock = [new AxelarChainObjectMock()];
     const getTokensResponseMock = [new AxelarInterchainTokenObjectMock()];
 
@@ -40,6 +43,8 @@ describe("AxelarService", () => {
                 return {};
             } else if (key === "axelar.interchainTokenServiceContract") {
                 return "0xB5FB4BE02232B1bBA4dC8f81dc24C26980dE9e3C";
+            } else if (key === "axelar.gmpUrl") {
+                return axelarGmpUrlMock;
             }
             return undefined;
         });
@@ -126,6 +131,60 @@ describe("AxelarService", () => {
 
             await expect(axelarService.getBridgeTokens(chainMock, otherChainMock)).rejects.toThrow(
                 new ServiceError(AxelarErrors.GET_BRIDGE_TOKENS_PARSE_ERROR),
+            );
+        });
+    });
+
+    describe("getPaginatedTransfers", () => {
+        it("should return the paginated transfers", async () => {
+            const axelarGMPTransfersObjectMock = new AxelarGMPTransfersObjectMock();
+
+            const fetchResultMock = new (mockify<Response>({
+                ok: true,
+                json: () => Promise.resolve(axelarGMPTransfersObjectMock),
+            }))();
+            const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValueOnce(fetchResultMock);
+
+            jest.spyOn(axelarService, "getChainById").mockResolvedValue(new ChainMock());
+
+            const paginatedTransfers = await axelarService.getPaginatedTransfers(1, 10);
+
+            expect(fetchSpy).toHaveBeenCalledWith(`${axelarGmpUrlMock}/searchGMP`, {
+                headers: { "Content-Type": "application/json" },
+                method: "POST",
+                body: JSON.stringify({
+                    size: 10,
+                    from: 0,
+                    sourceChain: undefined,
+                    destinationChain: undefined,
+                    contractMethod: AxelarGMPTransferContractMethod.INTERCHAIN_TRANSFER,
+                    senderAddress: undefined,
+                }),
+            });
+
+            expect(paginatedTransfers.items).toHaveLength(axelarGMPTransfersObjectMock.data.length);
+        });
+
+        it("should throw an error if the response is not ok", async () => {
+            const fetchResultMock = new (mockify<Response>({
+                ok: false,
+            }))();
+            jest.spyOn(global, "fetch").mockResolvedValueOnce(fetchResultMock);
+
+            await expect(axelarService.getPaginatedTransfers(1, 10)).rejects.toThrow(
+                new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_FETCH_ERROR),
+            );
+        });
+
+        it("should throw an error if the response is not parseable", async () => {
+            const fetchResultMock = new (mockify<Response>({
+                ok: true,
+                json: () => Promise.reject("not a json"),
+            }))();
+            jest.spyOn(global, "fetch").mockResolvedValueOnce(fetchResultMock);
+
+            await expect(axelarService.getPaginatedTransfers(1, 10)).rejects.toThrow(
+                new ServiceError(AxelarErrors.GET_PAGINATED_TRANSFERS_PARSE_ERROR),
             );
         });
     });

@@ -13,6 +13,7 @@
         "lint": "npx turbo run lint && echo '🧹 Lint completed'",
         "lint:packages": "npx turbo run lint --filter=\"./packages/**/*\" && echo '🧹 Lint packages completed'",
         "check-types": "npx turbo run check-types && echo '🔎 Check types completed'",
+        "check-types:packages": "npx turbo run check-types --filter=\"./packages/**/*\" && echo '🔎 Check types packages completed'",
         "dist": "npx turbo run dist && echo '📦 Dist completed'",
         "docker:start:dev": "docker-compose up -d",
         "docker:build:api": "docker build -f ./apps/api/Dockerfile -t api .",

@@ -23,6 +23,7 @@
     },
     "devDependencies": {
         "@shared/eslint": "workspace:*",
+        "@types/jest": "^29.5.12",
         "@shared/test": "workspace:*",
         "@shared/tsconfig": "workspace:*",
         "@shared/tsup": "workspace:*",

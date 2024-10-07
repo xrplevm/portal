@@ -16,6 +16,7 @@
     },
     "exports": {
         ".": "./src/core/index.ts",
+        "./assets/images": "./src/assets/images/index.ts",
         "./config": "./src/config/index.ts",
         "./themes": "./src/themes/index.ts",
         "./theme": "./src/themes/common/index.ts",
@@ -35,6 +36,7 @@
         "./chip": "./src/components/display/chip/index.ts",
         "./date-display": "./src/components/display/date-display/index.ts",
         "./divider": "./src/components/display/divider/index.ts",
+        "./expandable": "./src/components/display/expandable/index.ts",
         "./group": "./src/components/display/group/index.ts",
         "./image": "./src/components/display/image/index.ts",
         "./hash": "./src/components/display/hash/index.ts",

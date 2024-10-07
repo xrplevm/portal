@@ -2,6 +2,7 @@ export type DateType = Date | string | number;
 
 export enum DateFormat {
     SHORT = "short",
+    DATE_TIME = "dateTime",
     MINIMAL = "minimal",
     DAY_MONTH_YEAR = "dayMonthYear",
     DAY_MONTH = "dayMonth",

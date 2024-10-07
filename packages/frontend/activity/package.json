@@ -1,0 +1,52 @@
+{
+    "name": "@frontend/activity",
+    "author": "Peersyst",
+    "version": "0.0.0",
+    "license": "UNLICENSED",
+    "scripts": {
+        "dev": "tsup --watch",
+        "build": "tsup",
+        "test": "jest --maxWorkers=30% --passWithNoTests",
+        "test:coverage": "test --coverage --passWithNoTests",
+        "test:watch": "test --watch --passWithNoTests",
+        "test:debug": "jest --no-cache --runInBand --passWithNoTests",
+        "clean": "rimraf .turbo dist node_modules",
+        "lint": "eslint .",
+        "check-types": "npx tsc --noEmit",
+        "dist": "pnpm run build && node ../../../scripts/prebuild-exports.cjs"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./domain/interfaces": "./src/domain/interfaces/index.ts",
+        "./domain/controllers": "./src/domain/controllers/index.ts",
+        "./ui/interfaces": "./src/ui/interfaces/index.ts",
+        "./ui/queries": "./src/ui/queries/index.ts",
+        "./automock/ui": "./test/automock/ui/index.ts",
+        "./mocks/common": "./test/mocks/common/index.ts"
+    },
+    "peerDependencies": {
+        "@frontend/bridge": "workspace:*",
+        "@frontend/chain": "workspace:*",
+        "@frontend/core": "workspace:*",
+        "@frontend/query": "workspace:*",
+        "@shared/modules": "workspace:*",
+        "@tanstack/react-query": "^5.52.2"
+    },
+    "devDependencies": {
+        "@frontend/bridge": "workspace:*",
+        "@frontend/chain": "workspace:*",
+        "@frontend/core": "workspace:*",
+        "@frontend/query": "workspace:*",
+        "@shared/eslint": "workspace:*",
+        "@shared/modules": "workspace:*",
+        "@shared/test": "workspace:*",
+        "@shared/tsconfig": "workspace:*",
+        "@shared/tsup": "workspace:*",
+        "@tanstack/react-query": "^5.52.2",
+        "@types/jest": "^29.5.12",
+        "@types/react": "^18.3.4",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.2.5",
+        "typescript": "latest"
+    }
+}

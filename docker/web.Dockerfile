@@ -17,7 +17,9 @@ ENV APP_CONFIG_ENVIRONMENT_IDENTIFIER=$APP_CONFIG_ENVIRONMENT_IDENTIFIER
 
 COPY apps/web /project/apps/web
 # Build api
-RUN npx turbo run build --filter=web...
+WORKDIR /project/apps/web
+RUN pnpm build
+WORKDIR /project
 # Lint api
 # RUN npx turbo run lint --filter=web...
 # Test api

@@ -19,6 +19,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-appconfigdata": "^3.556.0",
+        "@frontend/activity": "workspace:*",
         "@frontend/axelar": "workspace:*",
         "@frontend/blockchain": "workspace:*",
         "@frontend/bridge": "workspace:*",

@@ -3,7 +3,7 @@ import axelarChains from "../../../config/axelar-chains.json";
 import { EthersTypechainContractIndexer } from "@bloxer/ethers-typechain-contract";
 import { AxelarAmplifierGatewayProxyContractFactory } from "./factories/gateway-contract-factory";
 import { ConfigService } from "@nestjs/config";
-import { GmpRelayerService } from "../gmp-relayer.service";
+import { GmpRelayerEvmService } from "../gmp-relayer.evm.service";
 
 @Injectable()
 export class GatewayIndexerService implements OnApplicationBootstrap {
@@ -11,7 +11,7 @@ export class GatewayIndexerService implements OnApplicationBootstrap {
 
     constructor(
         @Inject(ConfigService) private readonly configService: ConfigService,
-        private readonly gmpRelayerService: GmpRelayerService,
+        private readonly gmpRelayerService: GmpRelayerEvmService,
     ) {
         this.supportedChains = this.configService.get<string[]>("axelar.supportedChains")!;
     }

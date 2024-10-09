@@ -11,6 +11,7 @@ interface AxelarConfig {
     chainWebsockets: Record<string, string>;
     supportedChains: string[];
     itsGasLimit: number;
+    tokenIds: Record<string, string>;
 }
 
 /**
@@ -29,8 +30,12 @@ export default (): AxelarConfig => {
         chainWebsockets: {
             "avalanche-fuji": "wss://api.avax-test.network/ext/bc/C/ws",
             "xrpl-evm-sidechain": "ws://168.119.63.112:8546",
+            xrpl: "wss://s.devnet.rippletest.net:51233",
         },
         supportedChains: ["xrpl-evm-sidechain", "avalanche-fuji"],
         itsGasLimit: Number(process.env.AXELAR_ITS_GAS_LIMIT) || 8000000,
+        tokenIds: {
+            xrpl: process.env.XRPL_TOKEN_ID || "0xc2bb311dd03a93be4b74d3b4ab8612241c4dd1fd0232467c54a03b064f8583b6",
+        },
     });
 };

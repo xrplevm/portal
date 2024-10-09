@@ -4,6 +4,7 @@ export type AxelarInterchainTokenChainObject = {
     name: string;
     tokenManager: string;
     tokenManagerType: string;
+    decimals: number;
 };
 
 export type AxelarInterchainTokenObject = {

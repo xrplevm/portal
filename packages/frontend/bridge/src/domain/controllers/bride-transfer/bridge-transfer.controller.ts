@@ -15,6 +15,7 @@ import { Confirmed, Transaction } from "@shared/modules/blockchain";
 import { Chain } from "@frontend/chain";
 import { IBridgeTokenController } from "../../../ui/interfaces";
 import { isTrustReceiptWalletProvider, isTrustTransferWalletProvider } from "@frontend/wallet/providers";
+import { TranslatorFactory } from "@frontend/blockchain/translators";
 
 @Controller()
 export class BridgeTransferController implements IBridgeTransferController {
@@ -182,11 +183,12 @@ export class BridgeTransferController implements IBridgeTransferController {
         destinationWallet: IWalletProvider,
     ): Promise<Confirmed<Transaction>> {
         const originChainToken = token.toChainToken(originChain.id);
+        const destinationAddress = TranslatorFactory(originChain).translate(destinationChain.type, destinationWallet.address);
 
         try {
             this.eventEmitter.emit("stage", BridgeTransferStage.TRANSFER);
             this.eventEmitter.emit("transferRequested");
-            const unconfirmedCommit = await originWallet.transfer(amount, originChainToken, destinationChain, destinationWallet.address);
+            const unconfirmedCommit = await originWallet.transfer(amount, originChainToken, destinationChain, destinationAddress);
             this.eventEmitter.emit("transferSigned", unconfirmedCommit);
             const confirmedCommit = await unconfirmedCommit.wait();
             this.eventEmitter.emit("transferConfirmed", confirmedCommit);
@@ -206,11 +208,11 @@ export class BridgeTransferController implements IBridgeTransferController {
             this.eventEmitter.emit("awaitReceiptStarted");
             this.eventEmitter.emit("status", BridgeTransferStatus.SENT);
 
-            await new Promise((resolve) => setTimeout(resolve, 40000));
+            await new Promise((resolve) => setTimeout(resolve, 50000));
 
             this.eventEmitter.emit("status", BridgeTransferStatus.CONFIRMED);
 
-            await new Promise((resolve) => setTimeout(resolve, 40000));
+            await new Promise((resolve) => setTimeout(resolve, 50000));
 
             this.eventEmitter.emit("status", BridgeTransferStatus.RECEIVED);
             this.eventEmitter.emit("awaitReceiptCompleted");

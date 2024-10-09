@@ -21,8 +21,6 @@ import { useInit } from "./modules/common/hooks/use-init";
 import { Suspense } from "react";
 import Router from "./router/router";
 
-console.log("App");
-
 export default function App(): JSX.Element | null {
     const { isLoading } = useInit();
 

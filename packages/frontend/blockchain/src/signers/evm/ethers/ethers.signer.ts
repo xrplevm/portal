@@ -71,6 +71,7 @@ export class EthersSigner<Provider extends IEthersSignerProvider = IEthersSigner
         const sendingAmount = ethers.BigNumber.from(decimalToInt(amount, token.decimals));
 
         const interchainTokenService = this.getInterchainTokenServiceContract(doorAddress);
+
         const contractTx = await interchainTokenService.interchainTransfer(
             token.id!,
             destinationChain.id,

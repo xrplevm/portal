@@ -41,11 +41,11 @@ export class AxelarInterchainToken {
             decimals: this.decimals,
             image: this.image,
             chains: Object.entries(this.chains).reduce(
-                (acc, [chainId, { tokenAddress, symbol, name }]) => {
-                    acc[chainId] = { symbol, name, address: tokenAddress };
+                (acc, [chainId, { tokenAddress, symbol, name, decimals }]) => {
+                    acc[chainId] = { symbol, name, address: tokenAddress, decimals };
                     return acc;
                 },
-                {} as Record<string, Pick<TokenObject, "symbol" | "name" | "address">>,
+                {} as Record<string, Pick<TokenObject, "symbol" | "name" | "address" | "decimals">>,
             ),
             nativeChain: chain,
         });

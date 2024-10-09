@@ -1,1 +1,1 @@
-export * from "./useGetBridgeExplorerUrl";
+export * from "./use-get-bridge-explorer-url";

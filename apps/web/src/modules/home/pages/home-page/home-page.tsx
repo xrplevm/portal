@@ -19,11 +19,9 @@ const HomePage = ({ children }: PropsWithChildren): JSX.Element => {
         else setShowHomeTabs(false);
     }, [pathname]);
 
-    console.log("showHomeTabs", showHomeTabs);
-
     return (
         <MainPage>
-            <HomeTabs />
+            {showHomeTabs && <HomeTabs />}
             <HomeCard>{children}</HomeCard>
         </MainPage>
     );

@@ -692,6 +692,9 @@
                     "keyType": "ecdsa",
                     "domainSeparator": "0x069231ee16189bae59549ea7f4e2141d984279b453d767a618f80088ab2e191c",
                     "address": "axelar19pu8hfnwgc0vjhadmvmgz3w4d2g7d7qlg6jjky9y2mf8ea4vf4usj6ramg"
+                },
+                "xrpl": {
+                    "address": "axelar1upqj9paf2qhhp49fjtk4ghwnv2mzcqnpglggr0hds8dy9a4stz2st0ewsh"
                 }
             }
         },

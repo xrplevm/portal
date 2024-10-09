@@ -12,7 +12,7 @@ RUN npx turbo run test --filter=relayer...
 RUN pnpm --filter=relayer deploy --prod /artifacts
 
 
-FROM axelarnet/axelar-core:v1.0.2 as release
+FROM --platform=linux/amd64 axelarnet/axelar-core:v1.0.2 as release
 USER root
 RUN apk add --update nodejs npm
 USER axelard

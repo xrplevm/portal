@@ -2,7 +2,7 @@ import { IXrplSigner } from "./interfaces/i-xrpl.signer";
 import { XrplSignerErrors } from "./xrpl.signer.errors";
 import { SignerError } from "../../core/error";
 import { XrplTransactionParser } from "../../../transaction-parsers/xrp/xrpl/xrpl.transaction-parser";
-import { convertHexToString, convertStringToHex, Payment, SubmittableTransaction, TrustSet, Wallet, xrpToDrops } from "xrpl";
+import { convertStringToHex, Payment, SubmittableTransaction, TrustSet, Wallet, xrpToDrops } from "xrpl";
 import { IXrplSignerProvider } from "./interfaces/i-xrpl-signer.provider";
 import { SubmitTransactionResponse } from "@shared/xrpl/transaction";
 import { convertCurrencyCode } from "@shared/xrpl/currency-code";
@@ -101,7 +101,6 @@ export class XrplSigner<Provider extends IXrplSignerProvider = IXrplSignerProvid
         destinationAddress: string,
     ): Promise<Unconfirmed<Transaction>> {
         try {
-            console.log(convertHexToString("64657374696E6174696F6E5F61646472657373"));
             const submitTxResponse = await this.signAndSubmitTransaction<Payment>({
                 TransactionType: "Payment",
                 Account: this.wallet.address,

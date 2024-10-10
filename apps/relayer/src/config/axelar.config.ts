@@ -24,7 +24,7 @@ export default (): AxelarConfig => {
         chainId: process.env.AXELAR_CHAIN_ID || "devnet-amplifier",
         externalRelayWaitTime: Number(process.env.AXELAR_EXTERNAL_RELAY_WAIT_TIME) || 15_000,
         verifyWaitTime: Number(process.env.AXELAR_VERIFY_WAIT_TIME) || 15_000,
-        proveWaitTime: Number(process.env.AXELAR_PROVE_WAIT_TIME) || 15_000,
+        proveWaitTime: Number(process.env.AXELAR_PROVE_WAIT_TIME) || 20_000,
         privateKey: process.env.AXELAR_PRIVATE_KEY || "5b726ed6e1d4fdeec6ec7526d71c96218f6ebe4d7b10928732c49a242dd6bea9",
         externalRelayedChains: ["avalanche-fuji"],
         chainWebsockets: {

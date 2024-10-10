@@ -5,8 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { execSync } from "child_process";
 import { Client, SubmitRequest } from "xrpl";
 import { sleep } from "../common/utils/sleep";
-
-// import { ItsRelayerService } from "./its-relayer.service";
+import { ItsRelayerService } from "./its-relayer.service";
 
 @Injectable()
 export class GmpRelayerXrplEvmService {
@@ -22,16 +21,14 @@ export class GmpRelayerXrplEvmService {
 
     constructor(
         private readonly configService: ConfigService,
-        // private readonly itsRelayerService: ItsRelayerService,
+        private readonly itsRelayerService: ItsRelayerService,
     ) {
         this.axelarChainId = this.configService.get<string>("axelar.chainId")!;
         this.axelarRpc = this.configService.get<string>("axelar.rpcUrl")!;
         this.verifyWaitTime = this.configService.get<number>("axelar.verifyWaitTime")!;
         this.proveWaitTime = this.configService.get<number>("axelar.proveWaitTime")!;
         this.externalRelayWaitTime = this.configService.get<number>("axelar.externalRelayWaitTime")!;
-        // this.privateKey = this.configService.get<string>("axelar.privateKey")!;
         this.externalRelayedChains = this.configService.get<string[]>("axelar.externalRelayedChains")!;
-        // this.itsGasLimit = this.configService.get<number>("axelar.itsGasLimit")!;
         this.logger = new Logger(GmpRelayerXrplEvmService.name);
     }
     /**
@@ -74,41 +71,7 @@ export class GmpRelayerXrplEvmService {
 
         await new Promise((resolve) => setTimeout(resolve, this.verifyWaitTime));
 
-        // const abiCoder = new ethers.utils.AbiCoder();
-
-        // const payloadDecoded = abiCoder.decode(["uint256", "string", "bytes"], relayerRequest.payload);
-
-        // const interchainTransfer = abiCoder.decode(["uint256", "bytes32", "bytes", "bytes", "uint256", "bytes"], payloadDecoded[2]);
-        // const routeMessageCall = {
-        //     route_incoming_messages: [
-        //         {
-        //             payload: "",
-        //             message: {
-        //                 user_message: {
-        //                     tx_id: Array.from(Uint8Array.from(Buffer.from(txHash.slice(2), "hex"))),
-        //                     source_address: Array.from(Uint8Array.from(Buffer.from(interchainTransfer[3].slice(2), "hex"))),
-        //                     destination_chain: relayerRequest.sourceChain,
-        //                     destination_address: interchainTransfer[2].slice(2),
-        //                     payload_hash: "0000000000000000000000000000000000000000000000000000000000000000",
-        //                     amount: {
-        //                         drops: Number(ethers.BigNumber.from(interchainTransfer[4].toString()).div(1000000000000).toString()),
-        //                     },
-        //                 },
-        //             },
-        //         },
-        //     ],
-        // };
-
-        // // @ts-ignore
-        // const destinationChainGateway = axelarChains.axelar.contracts.Gateway[payloadDecoded[1]].address;
-
-        // this.logger.log(`Routing incoming message ${txHash} on ${payloadDecoded[1]}`);
-        // execSync(
-        //     `axelard tx wasm execute ${destinationChainGateway} '${JSON.stringify(routeMessageCall)}' ${this.axelarCmdTransactionFlags()}`,
-        //     {
-        //         stdio: "inherit",
-        //     },
-        // );
+        await this.routeMessages(relayerRequest);
     }
 
     /**
@@ -117,7 +80,7 @@ export class GmpRelayerXrplEvmService {
      */
     async routeMessages(relayerRequest: RelayerEvmRequest): Promise<void> {
         //@ts-ignore
-        const sourceChainGateway = axelarChains.axelar.contracts.AxelarnetGateway.address;
+        const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
         this.logger.log(`Routing message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         // 01. Route the message
         const routeMessageCall = {
@@ -129,7 +92,7 @@ export class GmpRelayerXrplEvmService {
                     },
                     destination_chain: axelarChains.axelar.id,
                     destination_address: axelarChains.axelar.contracts.InterchainTokenService.address,
-                    source_address: axelarChains.chains.xrpl.contracts.AxelarGateway.address,
+                    source_address: relayerRequest.sourceAddress,
                     payload_hash: relayerRequest.payloadHash,
                 },
             ],
@@ -166,7 +129,6 @@ export class GmpRelayerXrplEvmService {
         );
 
         const responseJson = JSON.parse(response.toString());
-
         const log = responseJson.logs[0].events.find((log: any) => log.type === "wasm-proof_under_construction");
         const attribute = log.attributes.find((attr: any) => attr.key === "multisig_session_id");
         return attribute.value.replace(/"/g, "");
@@ -266,6 +228,8 @@ export class GmpRelayerXrplEvmService {
         this.logger.log(`Submitting proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         await this.submitProofXrpl(response.result.tx_json.hash!);
 
+        await sleep(this.proveWaitTime);
+
         this.logger.log(`Updating transaction status for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         await this.updateTxStatusXrpl(
             multisigSessionId,
@@ -286,31 +250,12 @@ export class GmpRelayerXrplEvmService {
             await sleep(this.externalRelayWaitTime);
         }
         await sleep(this.verifyWaitTime);
-        // relayerRequest = await this.itsRelayerService.executeItsHub(relayerRequest);
+        relayerRequest = await this.itsRelayerService.executeItsHub(relayerRequest);
 
         await sleep(this.proveWaitTime);
 
-        this.logger.log(`Getting message ID for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
-
-        const res = execSync(
-            `axelard query txs --events "wasm-message_executed"."message_id"="${relayerRequest.messageId}" --node ${this.axelarRpc} --chain-id ${this.axelarChainId} --output json`,
-        );
-
-        const jsonResponse = JSON.parse(res.toString());
-
-        const log = jsonResponse.txs[0].logs.find((log: any) => log.events.find((event: any) => event.type === "wasm-message_executed"));
-        const messageId = log.events
-            .find((event: any) => event.type === "wasm-message_routed")
-            .attributes.find((attr: any) => attr.key === "message_id").value;
-
-        const payload = log.events
-            .find((event: any) => event.type === "wasm-contract_called")
-            .attributes.find((attr: any) => attr.key === "payload").value;
-
-        relayerRequest.messageId = messageId;
-        relayerRequest.payload = payload;
         const multisigSessionId = await this.constructTransferProofXrpl(relayerRequest);
-        await sleep(this.proveWaitTime * 3);
+        await sleep(this.proveWaitTime);
         await this.proveTransferXrpl(relayerRequest, multisigSessionId);
     }
 }

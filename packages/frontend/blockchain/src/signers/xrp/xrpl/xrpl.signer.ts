@@ -52,16 +52,11 @@ export class XrplSigner<Provider extends IXrplSignerProvider = IXrplSignerProvid
      * @returns The transaction response.
      */
     private async signAndSubmitTransaction<T extends SubmittableTransaction>(tx: T): Promise<SubmitTransactionResponse<T>> {
-        console.log("tx", tx);
-
         const completeTx = await this.provider.autofill(tx);
-        console.log("completeTx", completeTx);
 
         const signedTx = this.wallet.sign(completeTx).tx_blob;
-        console.log("signedTx", signedTx);
 
         const res = await this.provider.submit(signedTx);
-        console.log("res", res);
 
         if (res.result.engine_result !== "tesSUCCESS") {
             throw new SignerError(XrplSignerErrors.TRANSACTION_SUBMISSION_FAILED, { code: res.result.engine_result });

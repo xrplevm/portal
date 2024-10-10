@@ -3,7 +3,6 @@ import { RelayerEvmRequest } from "./requests/relayer-evm.request";
 import axelarChains from "../../config/axelar-chains.json";
 import { ConfigService } from "@nestjs/config";
 import { execSync } from "child_process";
-import { ethers } from "ethers";
 import { Client, SubmitRequest } from "xrpl";
 import { sleep } from "../common/utils/sleep";
 
@@ -46,9 +45,9 @@ export class GmpRelayerXrplEvmService {
     /**
      * Verify the messages.
      * @param relayerRequest The relayer request.
-     * @param txHash The transaction hash.
+     * @param _ The transaction hash.
      */
-    async verifyMessages(relayerRequest: RelayerEvmRequest, txHash: string): Promise<void> {
+    async verifyMessages(relayerRequest: RelayerEvmRequest, _: string): Promise<void> {
         //@ts-ignore
         const sourceChainGateway = axelarChains.axelar.contracts.Gateway[relayerRequest.sourceChain].address;
 
@@ -75,41 +74,41 @@ export class GmpRelayerXrplEvmService {
 
         await new Promise((resolve) => setTimeout(resolve, this.verifyWaitTime));
 
-        const abiCoder = new ethers.utils.AbiCoder();
+        // const abiCoder = new ethers.utils.AbiCoder();
 
-        const payloadDecoded = abiCoder.decode(["uint256", "string", "bytes"], relayerRequest.payload);
+        // const payloadDecoded = abiCoder.decode(["uint256", "string", "bytes"], relayerRequest.payload);
 
-        const interchainTransfer = abiCoder.decode(["uint256", "bytes32", "bytes", "bytes", "uint256", "bytes"], payloadDecoded[2]);
-        const routeMessageCall = {
-            route_incoming_messages: [
-                {
-                    payload: "",
-                    message: {
-                        user_message: {
-                            tx_id: Array.from(Uint8Array.from(Buffer.from(txHash.slice(2), "hex"))),
-                            source_address: Array.from(Uint8Array.from(Buffer.from(interchainTransfer[3].slice(2), "hex"))),
-                            destination_chain: relayerRequest.sourceChain,
-                            destination_address: interchainTransfer[2].slice(2),
-                            payload_hash: "0000000000000000000000000000000000000000000000000000000000000000",
-                            amount: {
-                                drops: Number(ethers.BigNumber.from(interchainTransfer[4].toString()).div(1000000000000).toString()),
-                            },
-                        },
-                    },
-                },
-            ],
-        };
+        // const interchainTransfer = abiCoder.decode(["uint256", "bytes32", "bytes", "bytes", "uint256", "bytes"], payloadDecoded[2]);
+        // const routeMessageCall = {
+        //     route_incoming_messages: [
+        //         {
+        //             payload: "",
+        //             message: {
+        //                 user_message: {
+        //                     tx_id: Array.from(Uint8Array.from(Buffer.from(txHash.slice(2), "hex"))),
+        //                     source_address: Array.from(Uint8Array.from(Buffer.from(interchainTransfer[3].slice(2), "hex"))),
+        //                     destination_chain: relayerRequest.sourceChain,
+        //                     destination_address: interchainTransfer[2].slice(2),
+        //                     payload_hash: "0000000000000000000000000000000000000000000000000000000000000000",
+        //                     amount: {
+        //                         drops: Number(ethers.BigNumber.from(interchainTransfer[4].toString()).div(1000000000000).toString()),
+        //                     },
+        //                 },
+        //             },
+        //         },
+        //     ],
+        // };
 
-        // @ts-ignore
-        const destinationChainGateway = axelarChains.axelar.contracts.Gateway[payloadDecoded[1]].address;
+        // // @ts-ignore
+        // const destinationChainGateway = axelarChains.axelar.contracts.Gateway[payloadDecoded[1]].address;
 
-        this.logger.log(`Routing incoming message ${txHash} on ${payloadDecoded[1]}`);
-        execSync(
-            `axelard tx wasm execute ${destinationChainGateway} '${JSON.stringify(routeMessageCall)}' ${this.axelarCmdTransactionFlags()}`,
-            {
-                stdio: "inherit",
-            },
-        );
+        // this.logger.log(`Routing incoming message ${txHash} on ${payloadDecoded[1]}`);
+        // execSync(
+        //     `axelard tx wasm execute ${destinationChainGateway} '${JSON.stringify(routeMessageCall)}' ${this.axelarCmdTransactionFlags()}`,
+        //     {
+        //         stdio: "inherit",
+        //     },
+        // );
     }
 
     /**
@@ -167,6 +166,7 @@ export class GmpRelayerXrplEvmService {
         );
 
         const responseJson = JSON.parse(response.toString());
+
         const log = responseJson.logs[0].events.find((log: any) => log.type === "wasm-proof_under_construction");
         const attribute = log.attributes.find((attr: any) => attr.key === "multisig_session_id");
         return attribute.value.replace(/"/g, "");
@@ -258,6 +258,9 @@ export class GmpRelayerXrplEvmService {
 
         await client.connect();
         const response = await client.request(request);
+
+        this.logger.log(response.status, response.result.tx_json.hash);
+
         await client.disconnect();
 
         this.logger.log(`Submitting proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
@@ -303,11 +306,11 @@ export class GmpRelayerXrplEvmService {
         const payload = log.events
             .find((event: any) => event.type === "wasm-contract_called")
             .attributes.find((attr: any) => attr.key === "payload").value;
+
         relayerRequest.messageId = messageId;
         relayerRequest.payload = payload;
-        await this.routeMessages(relayerRequest);
         const multisigSessionId = await this.constructTransferProofXrpl(relayerRequest);
-        await sleep(this.proveWaitTime);
+        await sleep(this.proveWaitTime * 3);
         await this.proveTransferXrpl(relayerRequest, multisigSessionId);
     }
 }

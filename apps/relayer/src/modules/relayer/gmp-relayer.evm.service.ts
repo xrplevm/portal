@@ -10,7 +10,7 @@ import { sleep } from "../common/utils/sleep";
 import { ItsRelayerService } from "./its-relayer.service";
 
 @Injectable()
-export class GmpRelayerService {
+export class GmpRelayerEvmService {
     private readonly axelarChainId: string;
     private readonly axelarRpc: string;
     private readonly verifyWaitTime: number;
@@ -24,7 +24,7 @@ export class GmpRelayerService {
         @Inject(ConfigService) private readonly configService: ConfigService,
         private readonly itsRelayerService: ItsRelayerService,
     ) {
-        this.logger = new Logger(GmpRelayerService.name);
+        this.logger = new Logger(GmpRelayerEvmService.name);
         this.axelarChainId = this.configService.get<string>("axelar.chainId")!;
         this.axelarRpc = this.configService.get<string>("axelar.rpcUrl")!;
         this.verifyWaitTime = this.configService.get<number>("axelar.verifyWaitTime")!;

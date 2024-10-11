@@ -39,6 +39,12 @@ export class XrplUserRequest {
         required: true,
     })
     payloadHash: string;
+
+    @ApiProperty({
+        type: "string",
+        required: true,
+    })
+    payload: string;
 }
 
 export class RelayerXrplRequest {

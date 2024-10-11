@@ -3,7 +3,7 @@ import axelarChains from "../../../config/axelar-chains.json";
 import { EthersTypechainContractIndexer } from "@bloxer/ethers-typechain-contract";
 import { AxelarAmplifierGatewayProxyContractFactory } from "./factories/gateway-contract-factory";
 import { ConfigService } from "@nestjs/config";
-import { GmpRelayerService } from "../gmp-relayer.service";
+import { GmpRelayerXrplEvmService } from "../gmp-relayer.xrpl-evm.service";
 
 @Injectable()
 export class GatewayIndexerService implements OnApplicationBootstrap {
@@ -11,7 +11,8 @@ export class GatewayIndexerService implements OnApplicationBootstrap {
 
     constructor(
         @Inject(ConfigService) private readonly configService: ConfigService,
-        private readonly gmpRelayerService: GmpRelayerService,
+        // private readonly gmpRelayerService: GmpRelayerEvmService,
+        private readonly gmpRelayerXrplEvmService: GmpRelayerXrplEvmService,
     ) {
         this.supportedChains = this.configService.get<string[]>("axelar.supportedChains")!;
     }
@@ -40,15 +41,18 @@ export class GatewayIndexerService implements OnApplicationBootstrap {
 
             // @ts-ignore
             gatewayIndexer.on("ContractCall", async (event) => {
-                await this.gmpRelayerService.relayEvmToEvm({
-                    sourceChain: chain,
-                    sourceAddress: event.args[0],
-                    messageId: `${event.transactionHash}-${event.logIndex}`,
-                    payload: event.args[4],
-                    payloadHash: event.args[3].slice(2),
-                    destinationChain: event.args[1],
-                    destinationAddress: event.args[2],
-                });
+                await this.gmpRelayerXrplEvmService.relayEvmToXrpl(
+                    {
+                        sourceChain: chain,
+                        sourceAddress: event.args[0],
+                        messageId: `${event.transactionHash}-${event.logIndex}`,
+                        payload: event.args[4],
+                        payloadHash: event.args[3].slice(2),
+                        destinationChain: event.args[1],
+                        destinationAddress: event.args[2],
+                    },
+                    event.transactionHash,
+                );
             });
 
             gatewayIndexer.run();

@@ -3,7 +3,7 @@ import { RelayerEvmRequest } from "./requests/relayer-evm.request";
 import axelarChains from "../../config/axelar-chains.json";
 import { ConfigService } from "@nestjs/config";
 import { execSync } from "child_process";
-import { Client, SubmitRequest } from "xrpl";
+import { Client, SubmitRequest, SubmitResponse } from "xrpl";
 import { sleep } from "../common/utils/sleep";
 import { ItsRelayerService } from "./its-relayer.service";
 
@@ -39,6 +39,26 @@ export class GmpRelayerXrplEvmService {
         return `--keyring-backend test --from wallet --gas 20000000 --gas-adjustment 1.5 --gas-prices 0.00005uamplifier --chain-id ${this.axelarChainId} --node ${this.axelarRpc}`;
     }
 
+    /**
+     * Submit a transaction blob to the XRPL.
+     * @param txBlob The transaction blob.
+     * @returns The transaction response.
+     */
+    async submitTransactionBlob(txBlob: string): Promise<SubmitResponse> {
+        const client = new Client("wss://s.devnet.rippletest.net:51233");
+
+        const request: SubmitRequest = {
+            command: "submit",
+            tx_blob: txBlob,
+            fail_hard: true,
+        };
+
+        await client.connect();
+        const response = await client.request(request);
+
+        await client.disconnect();
+        return response;
+    }
     /**
      * Verify the messages.
      * @param relayerRequest The relayer request.
@@ -210,20 +230,10 @@ export class GmpRelayerXrplEvmService {
             this.logger.error(`Proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain} is not completed`);
         }
         this.logger.log(`Proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain} is completed`);
-        const client = new Client("wss://s.devnet.rippletest.net:51233");
 
-        const request: SubmitRequest = {
-            command: "submit",
-            tx_blob: proof.data.tx_blob,
-            fail_hard: true,
-        };
-
-        await client.connect();
-        const response = await client.request(request);
+        const response = await this.submitTransactionBlob(proof.data.tx_blob);
 
         this.logger.log(response.status, response.result.tx_json.hash);
-
-        await client.disconnect();
 
         this.logger.log(`Submitting proof for message ${relayerRequest.messageId} on ${relayerRequest.destinationChain}`);
         await this.submitProofXrpl(response.result.tx_json.hash!);

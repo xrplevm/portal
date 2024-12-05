@@ -1,12 +1,19 @@
 import { Module } from "@nestjs/common";
-import { GmpRelayerService } from "./gmp-relayer.service";
+import { GmpRelayerEvmService } from "./gmp-relayer.evm.service";
 import { ItsRelayerService } from "./its-relayer.service";
-import { GatewayIndexerService } from "./indexers/gateway.indexer.service";
+import { GatewayIndexerService } from "./indexers/evm-gateway.indexer.service";
+import { GmpRelayerXrplService } from "./gmp-relayer.xrpl.service";
+import { XrplGatewayIndexerService } from "./indexers/xrpl-gateway.indexer.service";
+import { GmpRelayerXrplEvmService } from "./gmp-relayer.xrpl-evm.service";
 
 @Module({
-    imports: [],
-    providers: [GmpRelayerService, ItsRelayerService, GatewayIndexerService],
-    controllers: [],
-    exports: [],
+    providers: [
+        GmpRelayerEvmService,
+        GmpRelayerXrplService,
+        GmpRelayerXrplEvmService,
+        ItsRelayerService,
+        GatewayIndexerService,
+        XrplGatewayIndexerService,
+    ],
 })
 export class RelayerModule {}

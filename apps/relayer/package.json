@@ -19,11 +19,12 @@
         "db:pack": "nr ts-script src/seed/cmd/pack.ts"
     },
     "dependencies": {
-        "@axelar-network/axelar-gmp-sdk-solidity": "^5.10.0",
         "@aws-sdk/client-secrets-manager": "^3.266.1",
+        "@axelar-network/axelar-gmp-sdk-solidity": "^5.10.0",
         "@backend/config": "workspace:*",
         "@backend/core": "workspace:*",
         "@bloxer/ethers-typechain-contract": "0.0.5",
+        "@bloxer/xrpl-ledgers": "0.0.2",
         "@nanogiants/nestjs-swagger-api-exception-decorator": "^1.6.5",
         "@nestjs/cli": "^10.3.0",
         "@nestjs/common": "^10.3.0",
@@ -52,7 +53,8 @@
         "rxjs": "^7.8.0",
         "swagger-ui-express": "4.6.0",
         "typeorm": "^0.3.12",
-        "winston": "^3.8.2"
+        "winston": "^3.8.2",
+        "xrpl": "^4.0.0"
     },
     "devDependencies": {
         "@nestjs/schematics": "^10.0.3",
